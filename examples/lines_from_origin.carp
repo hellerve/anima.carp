@@ -1,12 +1,18 @@
 (load "anima.carp")
 (use Anima)
 
-(defsketch "example" 400 400
-  (background 0 0 0 255)
-  (color 255 255 255 255)
-  (line 0 0 (random 400) (random 400))
-  (line 0 0 (random 400) (random 400))
-  (line 0 0 (random 400) (random 400))
-  (line 0 0 (random 400) (random 400))
-  (line 0 0 (random 400) (random 400))
-  (line 0 0 (random 400) (random 400)))
+(def s 600)
+(def n-lines 50)
+
+(defn lines-from [a r x y]
+  (for [i 0 n-lines]
+    (let-do [whitish (random-between 80 255)]
+      (color a r whitish whitish whitish 255)
+      (line a r x y (random s) (random s)))))
+
+(defsketch "example" s s
+  (background app rend 0 0 0 255)
+  (lines-from app rend 0 0)
+  (lines-from app rend 0 s)
+  (lines-from app rend s 0)
+  (lines-from app rend s s))

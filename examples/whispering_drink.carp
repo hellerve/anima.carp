@@ -1,0 +1,21 @@
+(load "anima.carp")
+(use Anima)
+
+(use-all Float)
+
+(def size 800)
+(def margin 100)
+
+(defsketch "Whispering Drink" 800 800
+  (framerate 1)
+  (background app rend 20 20 20 255)
+  (color app rend 200 200 200 255)
+  (for [i 0 500]
+    (let-do [x (random-between margin (- size margin))
+             y (random-between margin (- size margin))
+             a (* (random-between 0.0f 1.0f) (* pi 2.0f))
+             tox (to-int (cos a))
+             toy (to-int (sin a))]
+      (line app rend x y (+ x tox) (+ x toy))
+      ; stand-in for a lack of a step-size in for
+      (set! &i (inc i)))))

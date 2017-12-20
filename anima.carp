@@ -6,6 +6,12 @@
 
       ;(SDL_SetRenderDrawBlendMode rend SDL_BLENDMODE_ADD)
 (defmodule Anima
+  (def timeout 30)
+
+  ; super naive way
+  (defn framerate [n]
+    (set! &timeout (/ 1000 n)))
+
   (defn color [app rend r g b alpha]
     (SDL_SetRenderDrawColor rend r g b alpha))
 
@@ -18,6 +24,9 @@
 
   (defn random [i]
     (Int.random-between 0 i))
+
+  (defn random-between [min max]
+    (Int.random-between min max))
 
   (defn rect [app rend ax ay w h]
     (let [bx ax
@@ -35,21 +44,24 @@
                 ())))))
 )
 
-(defdynamic sketchify-one [form]
-  (cons (car form) (cons 'app (cons 'rend (cdr form)))))
-
-(defdynamic sketchify [forms]
-  (if (= (count forms) 1)
-    (list (sketchify-one (car forms)))
-    (cons (sketchify-one (car forms)) (sketchify (cdr forms)))))
-
+;(defdynamic sketchify-one [form]
+;  (if (= (car form) 'loop)
+;    (list 'for (array 'anima--counter 0 (car (cdr form)))
+;      (sketchify-one (car (cdr (cdr form)))))
+;    (cons (car form) (cons 'app (cons 'rend (cdr form))))))
+;
+;(defdynamic sketchify [forms]
+;  (if (= (count forms) 1)
+;    (list (sketchify-one (car forms)))
+;    (cons (sketchify-one (car forms)) (sketchify (cdr forms)))))
+;
 (defmacro defsketch [name w h :rest forms]
   (list 'defn 'main (array)
     (list 'let (array 'app (list 'app-init (list 'copy name) w h)
                       'rend (list 'app-renderer 'app))
       (list 'while true
         (cons 'do
-          (cons-last (list 'SDL_Delay 30)
+          (cons-last (list 'SDL_Delay 'timeout)
             (cons-last (list 'SDL_RenderPresent 'rend)
               (cons (list 'handle-events 'app 'rend)
-                (sketchify forms)))))))))
+                forms))))))))
