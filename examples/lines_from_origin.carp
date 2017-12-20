@@ -1,0 +1,12 @@
+(load "anima.carp")
+(use Anima)
+
+(defsketch "example" 400 400
+  (background 0 0 0 255)
+  (color 255 255 255 255)
+  (line 0 0 (random 400) (random 400))
+  (line 0 0 (random 400) (random 400))
+  (line 0 0 (random 400) (random 400))
+  (line 0 0 (random 400) (random 400))
+  (line 0 0 (random 400) (random 400))
+  (line 0 0 (random 400) (random 400)))

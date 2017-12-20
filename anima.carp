@@ -1,0 +1,55 @@
+(load "sdl.carp")
+(load "sdl_image.carp")
+(load "Vector.carp")
+
+(use-all Keycode Vector2)
+
+      ;(SDL_SetRenderDrawBlendMode rend SDL_BLENDMODE_ADD)
+(defmodule Anima
+  (defn color [app rend r g b alpha]
+    (SDL_SetRenderDrawColor rend r g b alpha))
+
+  (defn-do background [app rend r g b alpha]
+    (SDL_SetRenderDrawColor rend r g b alpha)
+    (SDL_RenderClear rend))
+
+  (defn line [app rend ax ay bx by]
+    (SDL_RenderDrawLine rend ax ay bx by))
+
+  (defn random [i]
+    (Int.random-between 0 i))
+
+  (defn rect [app rend ax ay w h]
+    (let [bx ax
+          by ay
+          r (make-rect bx by (- w bx) (- h by))]
+      (SDL_RenderFillRect rend (address r))))
+
+  (defn handle-events [app rend]
+    (let [event (SDL_Event_init)]
+      (while (SDL_PollEvent (address event))
+        (let [et (event-type &event)]
+          (cond (= et SDL_QUIT) (quit &app)
+                (= et SDL_KEYDOWN) (let [key (event-keycode &event)]
+                                     (when (= key SDLK_ESCAPE) (quit &app)))
+                ())))))
+)
+
+(defdynamic sketchify-one [form]
+  (cons (car form) (cons 'app (cons 'rend (cdr form)))))
+
+(defdynamic sketchify [forms]
+  (if (= (count forms) 1)
+    (list (sketchify-one (car forms)))
+    (cons (sketchify-one (car forms)) (sketchify (cdr forms)))))
+
+(defmacro defsketch [name w h :rest forms]
+  (list 'defn 'main (array)
+    (list 'let (array 'app (list 'app-init (list 'copy name) w h)
+                      'rend (list 'app-renderer 'app))
+      (list 'while true
+        (cons 'do
+          (cons-last (list 'SDL_Delay 30)
+            (cons-last (list 'SDL_RenderPresent 'rend)
+              (cons (list 'handle-events 'app 'rend)
+                (sketchify forms)))))))))
