@@ -12,10 +12,10 @@
   (defn framerate [n]
     (set! &timeout (/ 1000 n)))
 
-  (defn color [app rend r g b alpha]
+  (defn set-color [app rend r g b alpha]
     (SDL_SetRenderDrawColor rend r g b alpha))
 
-  (defn-do background [app rend r g b alpha]
+  (defn-do set-background [app rend r g b alpha]
     (SDL_SetRenderDrawColor rend r g b alpha)
     (SDL_RenderClear rend))
 
@@ -33,6 +33,27 @@
           by ay
           r (make-rect bx by (- w bx) (- h by))]
       (SDL_RenderFillRect rend (address r))))
+
+  (defn cvrt- [c]
+    (Float.to-int (+ (* c 255.0f) 0.5f)))
+
+  (defn hsb-to-rgb [h s b]
+    (let [i (cvrt- b)]
+      (if (= 0.0f s)
+        [i i i]
+        (let [h1 (* (- h (Float.floor h)) 6.0f)
+              f (- h1 (Float.floor h1))
+              p (* b (- 1.0f s))
+              q (* b (- 1.0f (* s f)))
+              t (* b (- 1.0f (* s (- 1.0f f))))]
+          (case (Float.to-int h1)
+            0 [i (cvrt- t) (cvrt- p)]
+            1 [(cvrt- q) (cvrt- b) (cvrt- p)]
+            2 [(cvrt- p) (cvrt- b) (cvrt- t)]
+            3 [(cvrt- p) (cvrt- q) (cvrt- b)]
+            4 [(cvrt- t) (cvrt- p) (cvrt- b)]
+            5 [(cvrt- b) (cvrt- p) (cvrt- q)]
+            [])))))
 
   (defn handle-events [app rend]
     (let [event (SDL_Event_init)]
@@ -65,3 +86,16 @@
             (cons-last (list 'SDL_RenderPresent 'rend)
               (cons (list 'handle-events 'app 'rend)
                 forms))))))))
+
+(defdynamic setter [fn a r color cs]
+  (if (= (count cs) 0)
+    (list fn a r color color color 255)
+    (if (= (count cs) 2)
+      (list fn a r color (car cs) (car (cdr cs)) 255)
+      (list fn a r color (car cs) (car (cdr cs)) (car (cdr (cdr cs)))))))
+
+(defmacro color [a r color :rest cs]
+  (setter 'set-color a r color cs))
+
+(defmacro background [a r background :rest cs]
+  (setter 'set-background a r background cs))
