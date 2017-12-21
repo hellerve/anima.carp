@@ -72,7 +72,9 @@
     (list 'defn 'main (array)
       (list 'let (array 'app (list 'app-init (list 'copy name) w h)
                         'rend (list 'app-renderer 'app))
-        (list 'do (if (= (count draw) 1) (list setup 'app 'rend) (list))
+        (list 'do
+          (list 'System.srand (list 'System.time))
+          (if (= (count draw) 1) (list setup 'app 'rend) (list))
           (list 'while true
             (list 'do
                   (list 'handle-events 'app 'rend)

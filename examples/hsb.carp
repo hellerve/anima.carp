@@ -4,9 +4,6 @@
 
 (def hue 0.0f)
 
-(defn setup [app rend]
-  (framerate 3))
-
 (defn draw [app rend]
   (do
     (let [col (hsb-to-rgb hue 0.5f 0.5f)]
@@ -18,5 +15,4 @@
     (when (> hue 1.0f) (set! &hue 0.0f))))
 
 (defsketch "hsb-sketch" 200 200
-  setup
   draw)
