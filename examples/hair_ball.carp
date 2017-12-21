@@ -1,0 +1,22 @@
+(load "anima.carp")
+
+(use-all Anima Float)
+
+(def size 600)
+(def t 300.0f)
+
+(defsketch "Hair Ball" size size
+  (background app rend 0)
+  (framerate 1)
+  (for [i 0 800]
+    (do
+      (let [col (random 220)]
+        (color app rend col col col 100))
+      (let [a (* (random-between 0.0f 1.0f) (* pi 2.0f))
+            fromx (to-int (* t (cos a)))
+            fromy (to-int (* t (sin a)))
+            toa (* (random-between 0.0f 1.0f) (* pi 2.0f))
+            tox (to-int (* t (cos toa)))
+            toy (to-int (* t (sin toa)))]
+        (line app rend (+ fromx (to-int t)) (+ fromy (to-int t))
+                       (+ tox (to-int t)) (+ toy (to-int t)))))))
