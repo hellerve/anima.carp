@@ -13,14 +13,13 @@
   (do
     (background app rend 20)
     (color app rend 200)
-    (for [i 0 500]
-      (let-do [x (random-between margin (- size margin))
-               y (random-between margin (- size margin))
-               a (* (random-between 0.0f 1.0f) (* pi 2.0f))
-               tox (to-int (cos a))
-               toy (to-int (sin a))]
-        (line app rend x y (+ x tox) (+ x toy))
-        (set! &i (Int.inc i))))))
+    (for [i 0 500 2]
+      (let [x (random-between margin (- size margin))
+            y (random-between margin (- size margin))
+            a (* (random-between 0.0f 1.0f) (* pi 2.0f))
+            tox (to-int (cos a))
+            toy (to-int (sin a))]
+        (line app rend x y (+ x tox) (+ x toy))))))
 
 (defsketch "Whispering Drink" 800 800
   setup
