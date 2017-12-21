@@ -6,11 +6,11 @@
 
       ;(SDL_SetRenderDrawBlendMode rend SDL_BLENDMODE_ADD)
 (defmodule Anima
-  (def timeout 30)
+  (def fr 60)
 
   ; super naive way
   (defn framerate [n]
-    (set! &timeout (/ 1000 n)))
+    (set! &fr n))
 
   (defn set-color [app rend r g b alpha]
     (SDL_SetRenderDrawColor rend r g b alpha))
@@ -78,7 +78,9 @@
                   (list 'handle-events 'app 'rend)
                   (if (= (count draw) 1) (list (car draw) 'app 'rend) (list setup 'app 'rend))
                   (list 'SDL_RenderPresent 'rend)
-                  (list 'SDL_Delay 'timeout)))))))
+                  (list 'if (list '= 'fr 0)
+                    (list 'forever-do (list 'handle-events 'app 'rend))
+                    (list 'SDL_Delay (list '/ 1000 'fr)))))))))
 
 (defdynamic setter [fn a r color cs]
   (if (= (count cs) 0)
