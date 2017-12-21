@@ -4,12 +4,19 @@
 
 (def hue 0.0f)
 
+(defn setup [app rend]
+  (framerate 3))
+
+(defn draw [app rend]
+  (do
+    (let [col (hsb-to-rgb hue 0.5f 0.5f)]
+      (background app rend @(nth &col 0) @(nth &col 1) @(nth &col 2) 255))
+    (let-do [col (hsb-to-rgb (- 1.0f hue) 0.5f 0.5f)]
+      (color app rend @(nth &col 0) @(nth &col 1) @(nth &col 2) 255)
+      (rect app rend 50 50 150 150))
+    (set! &hue (+ hue 0.05f))
+    (when (> hue 1.0f) (set! &hue 0.0f))))
+
 (defsketch "hsb-sketch" 200 200
-  (framerate 3)
-  (let [col (hsb-to-rgb hue 0.5f 0.5f)]
-    (background app rend @(nth &col 0) @(nth &col 1) @(nth &col 2) 255))
-  (let-do [col (hsb-to-rgb (- 1.0f hue) 0.5f 0.5f)]
-    (color app rend @(nth &col 0) @(nth &col 1) @(nth &col 2) 255)
-    (rect app rend 50 50 150 150))
-  (set! &hue (+ hue 0.05f))
-  (when (> hue 1.0f) (set! &hue 0.0f)))
+  setup
+  draw)

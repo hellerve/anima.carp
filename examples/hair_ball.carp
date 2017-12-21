@@ -5,9 +5,12 @@
 (def size 600)
 (def t 300.0f)
 
-(defsketch "Hair Ball" size size
-  (background app rend 0)
-  (framerate 1)
+(defn setup [app rend]
+  (do
+    (background app rend 0)
+    (framerate 1)))
+
+(defn draw [app rend]
   (for [i 0 800]
     (do
       (let [col (random 220)]
@@ -20,3 +23,7 @@
             toy (to-int (* t (sin toa)))]
         (line app rend (+ fromx (to-int t)) (+ fromy (to-int t))
                        (+ tox (to-int t)) (+ toy (to-int t)))))))
+
+(defsketch "Hair Ball" size size
+  setup
+  draw)

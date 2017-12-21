@@ -10,9 +10,13 @@
       (color a r whitish whitish whitish 255)
       (line a r x y (random s) (random s)))))
 
+(defn draw [app rend]
+  (do
+    (background app rend 0 0 0 255)
+    (lines-from app rend 0 0)
+    (lines-from app rend 0 s)
+    (lines-from app rend s 0)
+    (lines-from app rend s s)))
+
 (defsketch "example" s s
-  (background app rend 0 0 0 255)
-  (lines-from app rend 0 0)
-  (lines-from app rend 0 s)
-  (lines-from app rend s 0)
-  (lines-from app rend s s))
+  draw)
