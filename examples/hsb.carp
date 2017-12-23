@@ -2,17 +2,16 @@
 (use Anima)
 (use Array)
 
-(def hue 0.0f)
+(def hue 360)
 
 (defn draw [app rend]
   (do
-    (let [col (hsb-to-rgb hue 0.5f 0.5f)]
-      (background app rend @(nth &col 0) @(nth &col 1) @(nth &col 2) 255))
-    (let-do [col (hsb-to-rgb (- 1.0f hue) 0.5f 0.5f)]
-      (color app rend @(nth &col 0) @(nth &col 1) @(nth &col 2) 255)
+    (let [col (hsb-to-rgb hue 50 50)]
+      (background app rend @(nth &col 0) @(nth &col 1) @(nth &col 2)))
+    (let-do [col (hsb-to-rgb (- 255 hue) 50 50)]
+      (color app rend @(nth &col 0) @(nth &col 1) @(nth &col 2))
       (rect app rend 50 50 150 150))
-    (set! &hue (+ hue 0.05f))
-    (when (> hue 1.0f) (set! &hue 0.0f))))
+    (set! &hue (+ hue 2))
+    (when (> hue 360) (set! &hue 0))))
 
-(defsketch "hsb-sketch" 200 200
-  draw)
+(defsketch "hsb-sketch" 200 200 draw)

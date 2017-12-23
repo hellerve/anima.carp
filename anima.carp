@@ -37,8 +37,11 @@
   (defn cvrt- [c]
     (Float.to-int (+ (* c 255.0f) 0.5f)))
 
-  (defn hsb-to-rgb [h s b]
-    (let [i (cvrt- b)]
+  (defn hsb-to-rgb [ih is ib]
+    (let [h (/ (Float.from-int ih) 360.0f)
+          s (/ (Float.from-int is) 100.0f)
+          b (/ (Float.from-int ib) 100.0f)
+          i (cvrt- b)]
       (if (= 0.0f s)
         [i i i]
         (let [h1 (* (- h (Float.floor h)) 6.0f)
