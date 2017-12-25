@@ -68,24 +68,31 @@
                 ())))))
 )
 
-(defmacro defsketch [name w h setup :rest draw]
-  ;Once carp is ready...
-  ;(if (not (or (= 1 (count draw)) (= 0 (count draw))))
-  ;  (macro-error "Cannot define sketch with more than one draw function.")
+(defmacro defsketch [name w h setup :rest draw-and-state]
+  (if (< 2 (count draw-and-state))
+    (macro-error "Cannot define sketch with more than six arguments.")
     (list 'defn 'main (array)
       (list 'let (array 'app (list 'app-init (list 'copy name) w h)
-                        'rend (list 'app-renderer 'app))
+                        'rend (list 'app-renderer 'app)
+                        'anima--state (if (= (count draw-and-state) 2)
+                                        (list (car (cdr draw-and-state)))
+                                        0)) ;; TODO: remove standin
         (list 'do
           (list 'System.srand (list 'System.time))
-          (if (= (count draw) 1) (list setup 'app 'rend) (list))
+          (if (> (count draw-and-state) 0) (list setup 'app 'rend) (list))
           (list 'while true
             (list 'do
                   (list 'handle-events 'app 'rend)
-                  (if (= (count draw) 1) (list (car draw) 'app 'rend) (list setup 'app 'rend))
+                  (if (> (count draw-and-state) 0)
+                    (if (> (count draw-and-state) 1)
+                      (list 'set! (list 'ref 'anima--state)
+                            (list (car draw-and-state) 'app 'rend (list 'copy (list 'ref 'anima--state))))
+                      (list (car draw-and-state) 'app 'rend))
+                    (list setup 'app 'rend))
                   (list 'SDL_RenderPresent 'rend)
                   (list 'if (list '= 'fr 0)
                     (list 'forever-do (list 'handle-events 'app 'rend))
-                    (list 'SDL_Delay (list '/ 1000 'fr)))))))))
+                    (list 'SDL_Delay (list '/ 1000 'fr))))))))))
 
 (defdynamic setter [fn a r color cs]
   (if (= (count cs) 0)
