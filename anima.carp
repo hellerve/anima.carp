@@ -86,7 +86,7 @@
                   (if (> (count draw-and-state) 0)
                     (if (> (count draw-and-state) 1)
                       (list 'set! (list 'ref 'anima--state)
-                            (list (car draw-and-state) 'app 'rend (list 'copy (list 'ref 'anima--state))))
+                            (list (car draw-and-state) 'app 'rend 'anima--state))
                       (list (car draw-and-state) 'app 'rend))
                     (list setup 'app 'rend))
                   (list 'SDL_RenderPresent 'rend)
