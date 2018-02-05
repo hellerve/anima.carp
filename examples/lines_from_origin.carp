@@ -6,9 +6,9 @@
 
 (defn lines-from [a r x y]
   (for [i 0 n-lines]
-    (let-do [whitish (random-between 80 255)]
+    (let-do [whitish (Anima.random-between 80 255)]
       (color a r whitish whitish whitish 255)
-      (line a r x y (random s) (random s)))))
+      (line a r x y (Anima.random s) (Anima.random s)))))
 
 (defn draw [app rend]
   (do

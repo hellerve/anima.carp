@@ -10,7 +10,7 @@
 
   ; super naive way
   (defn framerate [n]
-    (set! &fr n))
+    (set! fr n))
 
   (defn set-color [app rend r g b alpha]
     (SDL_SetRenderDrawColor rend r g b alpha))
@@ -85,7 +85,7 @@
                   (list 'handle-events 'app 'rend)
                   (if (> (count draw-and-state) 0)
                     (if (> (count draw-and-state) 1)
-                      (list 'set! (list 'ref 'anima--state)
+                      (list 'set! 'anima--state
                             (list (car draw-and-state) 'app 'rend 'anima--state))
                       (list (car draw-and-state) 'app 'rend))
                     (list setup 'app 'rend))

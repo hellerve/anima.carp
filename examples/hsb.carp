@@ -11,7 +11,7 @@
     (let-do [col (hsb-to-rgb (- 255 hue) 50 50)]
       (color app rend @(nth &col 0) @(nth &col 1) @(nth &col 2))
       (rect app rend 50 50 150 150))
-    (set! &hue (+ hue 2))
-    (when (> hue 360) (set! &hue 0))))
+    (set! hue (+ hue 2))
+    (when (> hue 360) (set! hue 0))))
 
 (defsketch "hsb-sketch" 200 200 draw)
