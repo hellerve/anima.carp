@@ -13,7 +13,7 @@
 (defn draw [app rend]
   (for [i 0 800]
     (do
-      (let [col (Anima.random 220)]
+      (let [col (Anima.rand 220)]
         (color app rend col col col 100))
       (let [a (* (random-between 0.0f 1.0f) (* pi 2.0f))
             fromx (to-int (* t (cos a)))
