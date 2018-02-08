@@ -22,7 +22,7 @@
   (defn line [app rend ax ay bx by]
     (SDL_RenderDrawLine rend ax ay bx by))
 
-  (defn random [i]
+  (defn rand [i]
     (Int.random-between 0 i))
 
   (defn random-between [min max]
@@ -78,6 +78,7 @@
                                         (list (car (cdr draw-and-state)))
                                         0)) ;; TODO: remove standin
         (list 'do
+          (project-set! "title" name)
           (list 'System.srand (list 'System.time))
           (if (> (count draw-and-state) 0) (list setup 'app 'rend) (list))
           (list 'while true
