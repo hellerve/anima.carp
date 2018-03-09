@@ -79,7 +79,7 @@
                                         0)) ;; TODO: remove standin
         (list 'do
           (project-set! "title" name)
-          (list 'System.srand (list 'System.time))
+          (list 'System.seed-random (list 'System.time))
           (if (> (count draw-and-state) 0) (list setup 'app 'rend) (list))
           (list 'while true
             (list 'do
