@@ -4,19 +4,19 @@
 (def s 600)
 (def n-lines 50)
 
-(defn lines-from [a r x y]
+(defn lines-from [r x y]
   (for [i 0 n-lines]
     (let-do [whitish (Anima.random-between 80 255)]
-      (color a r whitish whitish whitish 255)
-      (line a r x y (Anima.rand s) (Anima.rand s)))))
+      (color r whitish whitish whitish 255)
+      (line r x y (Anima.rand s) (Anima.rand s)))))
 
-(defn draw [app rend]
+(defn draw [rend]
   (do
-    (background app rend 0 0 0 255)
-    (lines-from app rend 0 0)
-    (lines-from app rend 0 s)
-    (lines-from app rend s 0)
-    (lines-from app rend s s)))
+    (background rend 0 0 0 255)
+    (lines-from rend 0 0)
+    (lines-from rend 0 s)
+    (lines-from rend s 0)
+    (lines-from rend s s)))
 
 (defsketch "example" s s
   draw)

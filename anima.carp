@@ -2,7 +2,7 @@
 (load "sdl_image.carp")
 (load "Vector.carp")
 
-(use-all Keycode Vector2)
+(use-all Vector2)
 
       ;(SDL_SetRenderDrawBlendMode rend SDL_BLENDMODE_ADD)
 (defmodule Anima
@@ -12,15 +12,15 @@
   (defn framerate [n]
     (set! fr n))
 
-  (defn set-color [app rend r g b alpha]
-    (SDL_SetRenderDrawColor rend r g b alpha))
+  (defn set-color [rend r g b alpha]
+    (SDL.set-render-draw-color rend r g b alpha))
 
-  (defn-do set-background [app rend r g b alpha]
-    (SDL_SetRenderDrawColor rend r g b alpha)
-    (SDL_RenderClear rend))
+  (defn-do set-background [rend r g b alpha]
+    (SDL.set-render-draw-color rend r g b alpha)
+    (SDL.render-clear rend))
 
-  (defn line [app rend ax ay bx by]
-    (SDL_RenderDrawLine rend ax ay bx by))
+  (defn line [rend ax ay bx by]
+    (SDL.render-draw-line rend ax ay bx by))
 
   (defn rand [i]
     (Int.random-between 0 i))
@@ -28,11 +28,11 @@
   (defn random-between [min max]
     (Int.random-between min max))
 
-  (defn rect [app rend ax ay w h]
+  (defn rect [rend ax ay w h]
     (let [bx ax
           by ay
-          r (make-rect bx by (- w bx) (- h by))]
-      (SDL_RenderFillRect rend (address r))))
+          r (SDL.rect bx by (- w bx) (- h by))]
+      (SDL.render-fill-rect rend (address r))))
 
   (defn cvrt- [c]
     (Float.to-int (+ (* c 255.0f) 0.5f)))
@@ -59,12 +59,13 @@
             [])))))
 
   (defn handle-events [app rend]
-    (let [event (SDL_Event_init)]
-      (while (SDL_PollEvent (address event))
-        (let [et (event-type &event)]
-          (cond (= et SDL_QUIT) (quit &app)
-                (= et SDL_KEYDOWN) (let [key (event-keycode &event)]
-                                     (when (= key SDLK_ESCAPE) (quit &app)))
+    (let [event (SDL.Event.init)]
+      (while (SDL.Event.poll (address event))
+        (let [et (SDL.Event.type &event)]
+          (cond (= et SDL.Event.quit) (SDLApp.stop app)
+                (= et SDL.Event.key-down) (let [key (SDL.Event.keycode &event)]
+                                             (when (= key SDL.key-escape)
+                                               (SDLApp.stop app)))
                 ())))))
 )
 
@@ -72,38 +73,39 @@
   (if (< 2 (count draw-and-state))
     (macro-error "Cannot define sketch with more than six arguments.")
     (list 'defn 'main (array)
-      (list 'let (array 'app (list 'app-init (list 'copy name) w h)
-                        'rend (list 'app-renderer 'app)
+      (list 'let (array 'app (list 'SDLApp.create name w h)
+                        'rend (list 'copy (list 'SDLApp.renderer
+                                                (list 'ref 'app)))
                         'anima--state (if (= (count draw-and-state) 2)
                                         (list (car (cdr draw-and-state)))
                                         0)) ;; TODO: remove standin
         (list 'do
           (project-set! "title" name)
           (list 'System.seed-random (list 'System.time))
-          (if (> (count draw-and-state) 0) (list setup 'app 'rend) (list))
+          (if (> (count draw-and-state) 0) (list setup 'rend) (list))
           (list 'while true
             (list 'do
-                  (list 'handle-events 'app 'rend)
+                  (list 'handle-events (list 'ref 'app) 'rend)
                   (if (> (count draw-and-state) 0)
                     (if (> (count draw-and-state) 1)
                       (list 'set! 'anima--state
-                            (list (car draw-and-state) 'app 'rend 'anima--state))
-                      (list (car draw-and-state) 'app 'rend))
-                    (list setup 'app 'rend))
-                  (list 'SDL_RenderPresent 'rend)
+                            (list (car draw-and-state) 'rend 'anima--state))
+                      (list (car draw-and-state) 'rend))
+                    (list setup 'rend))
+                  (list 'SDL.render-present 'rend)
                   (list 'if (list '= 'fr 0)
-                    (list 'forever-do (list 'handle-events 'app 'rend))
-                    (list 'SDL_Delay (list '/ 1000 'fr))))))))))
+                    (list 'forever-do (list 'handle-events (list 'ref 'app) 'rend))
+                    (list 'SDL.delay (list '/ 1000 'fr))))))))))
 
-(defdynamic setter [fn a r color cs]
+(defdynamic setter [fn r color cs]
   (if (= (count cs) 0)
-    (list fn a r color color color 255)
+    (list fn r color color color 255)
     (if (= (count cs) 2)
-      (list fn a r color (car cs) (car (cdr cs)) 255)
-      (list fn a r color (car cs) (car (cdr cs)) (car (cdr (cdr cs)))))))
+      (list fn r color (car cs) (car (cdr cs)) 255)
+      (list fn r color (car cs) (car (cdr cs)) (car (cdr (cdr cs)))))))
 
-(defmacro color [a r color :rest cs]
-  (setter 'set-color a r color cs))
+(defmacro color [r color :rest cs]
+  (setter 'set-color r color cs))
 
-(defmacro background [a r background :rest cs]
-  (setter 'set-background a r background cs))
+(defmacro background [r background :rest cs]
+  (setter 'set-background r background cs))

@@ -8,13 +8,13 @@ to use, expressive, and empowering. It is also very minimal at the moment. Read
 (load "anima.carp")
 (use Anima)
 
-(defn setup [app rend]
+(defn setup [rend]
   (framerate 0)) ; shortcut for a static sketch
 
-(defn draw [app rend]
+(defn draw [rend]
   (do
-    (color app rend 255)
-    (line app rend 0 0 800 800)))
+    (color rend 255)
+    (line rend 0 0 800 800)))
 
 (defsketch "One line to rule them all" 800 800
   setup

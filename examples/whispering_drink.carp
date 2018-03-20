@@ -4,17 +4,17 @@
 (def size 800)
 (def margin 100)
 
-(defn setup [app rend]
+(defn setup [rend]
   (framerate 1))
 
-(defn draw [app rend]
+(defn draw [rend]
   (do
-    (background app rend 20)
-    (color app rend 200)
+    (background rend 20)
+    (color rend 200)
     (for [i 0 300]
       (let [x (Anima.random-between margin (- size margin))
             y (Anima.random-between margin (- size margin))]
-        (line app rend x y x x)))))
+        (line rend x y x x)))))
 
 (defsketch "Whispering Drink" 800 800
   setup
