@@ -64,7 +64,7 @@
         (let [et (SDL.Event.type &event)]
           (cond (= et SDL.Event.quit) (SDLApp.stop app)
                 (= et SDL.Event.key-down) (let [key (SDL.Event.keycode &event)]
-                                             (when (= key SDL.key-escape)
+                                             (when (= key SDL.Keycode.escape)
                                                (SDLApp.stop app)))
                 ())))))
 )
