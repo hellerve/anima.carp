@@ -4,39 +4,50 @@
 
 (use-all Vector2)
 
-      ;(SDL_SetRenderDrawBlendMode rend SDL_BLENDMODE_ADD)
 (defmodule Anima
   (def fr 60)
+  (hidden fr)
+  (private fr)
 
   ; super naive way
+  (doc framerate "Set the framerate to n per second.")
   (defn framerate [n]
     (set! fr n))
 
+  (hidden set-color)
   (defn set-color [rend r g b alpha]
     (SDL.set-render-draw-color rend r g b alpha))
 
+  (hidden set-background)
   (defn-do set-background [rend r g b alpha]
     (SDL.set-render-draw-color rend r g b alpha)
     (SDL.render-clear rend))
 
+  (doc line "Draw a line from (ax, ay) to (bx, by).")
   (defn line [rend ax ay bx by]
     (SDL.render-draw-line rend ax ay bx by))
 
+  (doc rand "Generate a random integer from 0 to i.")
   (defn rand [i]
     (Int.random-between 0 i))
 
+  (doc random-between "Generate a random integer from min to max.")
   (defn random-between [min max]
     (Int.random-between min max))
 
+  (doc rect "Draw a rectangle with (ax, ay) as origin, w as width, and h as height.")
   (defn rect [rend ax ay w h]
     (let [bx ax
           by ay
           r (SDL.rect bx by (- w bx) (- h by))]
       (SDL.render-fill-rect rend (address r))))
 
+  (hidden cvrt-)
+  (private cvrt-)
   (defn cvrt- [c]
     (Float.to-int (+ (* c 255.0f) 0.5f)))
 
+  (doc hsb-to-rgb "Convert a three-component HSB color to an RGB color array.")
   (defn hsb-to-rgb [ih is ib]
     (let [h (/ (Float.from-int ih) 360.0f)
           s (/ (Float.from-int is) 100.0f)
@@ -58,6 +69,7 @@
             5 [(cvrt- b) (cvrt- p) (cvrt- q)]
             [])))))
 
+  (hidden handle-events)
   (defn handle-events [app rend]
     (let [event (SDL.Event.init)]
       (while (SDL.Event.poll (address event))
@@ -67,6 +79,13 @@
                                              (when (= key SDL.Keycode.escape)
                                                (SDLApp.stop app)))
                 ())))))
+
+  ;(doc defsketch "Create a sketch with a name, width, height, and setup function. Optionally takes a draw and state function as well.")
+  ;(sig defsketch (Fn [&String Int Int (Fn [SDL.Renderer] ())] ()))
+  ;(doc color "Set the current drawing color to color. The color can have 1 component (greyscale, from 0 to 255), three components (RGB value, from 0 to 255), or 4 components (RGBA value, from 0 to 255).")
+  ;(sig color (Fn [SDL.Renderer Int] ()))
+  ;(doc background "Set the current background color to color. The color can have 1 component (greyscale, from 0 to 255), three components (RGB value, from 0 to 255), or 4 components (RGBA value, from 0 to 255). **Warning**: This will also clear the screen with that color.")
+  ;(sig background (Fn [SDL.Renderer Int] ()))
 )
 
 (defmacro defsketch [name w h setup :rest draw-and-state]
@@ -97,6 +116,7 @@
                     (list 'forever-do (list 'handle-events (list 'ref 'app) 'rend))
                     (list 'SDL.delay (list '/ 1000 'fr))))))))))
 
+(hidden setter)
 (defdynamic setter [fn r color cs]
   (if (= (count cs) 0)
     (list fn r color color color 255)

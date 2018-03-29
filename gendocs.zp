@@ -1,0 +1,9 @@
+(load "anima.carp")
+
+(defdynamic gendocs []
+       (do
+         (Project.config "title" "Anima")
+         (save-docs Anima)))
+
+(gendocs)
+(quit)
