@@ -2,7 +2,8 @@
 
 A simple drawing and animation framework for Carp. It is designed to be simple
 to use, expressive, and empowering. It is also very minimal at the moment. Read
-[my blog post](https://blog.veitheller.de/Introducing_anima.html) about it.
+[my blog post](https://blog.veitheller.de/Introducing_anima.html) about it or
+browse [the docs](https://veitheller.de/anima/).
 
 ```clojure
 (load "anima.carp")
