@@ -9,12 +9,11 @@ a {
 .logo {
     text-align: right;
     float: right;
-    width: 150px;
-    font-family: "Hasklig", "Lucida Console", monospace;
+    width: 200px;
 }
 
 .logo img {
-    width: 150px;
+    width: 200px;
     margin-bottom: 1em;
 }
 
