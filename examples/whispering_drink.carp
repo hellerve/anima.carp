@@ -16,6 +16,6 @@
             y (Anima.random-between margin (- size margin))]
         (line rend x y x x)))))
 
-(defsketch "Whispering Drink" 800 800
+(defsketch "Whispering Drink" size size
   setup
   draw)
