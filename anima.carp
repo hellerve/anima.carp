@@ -89,24 +89,24 @@
 )
 
 (defmacro defsketch [name w h setup :rest draw-and-state]
-  (if (< 2 (count draw-and-state))
+  (if (< 2 (length draw-and-state))
     (macro-error "Cannot define sketch with more than six arguments.")
     (list 'defn 'main (array)
       (list 'let (array 'app (list 'SDLApp.create name w h)
                         'rend (list 'copy (list 'SDLApp.renderer
                                                 (list 'ref 'app)))
-                        'anima--state (if (= (count draw-and-state) 2)
+                        'anima--state (if (= (length draw-and-state) 2)
                                         (list (car (cdr draw-and-state)))
                                         0)) ;; TODO: remove standin
         (list 'do
           (project-set! "title" name)
-          (list 'System.seed-random (list 'System.time))
-          (if (> (count draw-and-state) 0) (list setup 'rend) (list))
+          (list 'Random.seed '(* 0.1 (Double.from-int (System.time))))
+          (if (> (length draw-and-state) 0) (list setup 'rend) (list))
           (list 'while true
             (list 'do
                   (list 'handle-events (list 'ref 'app) 'rend)
-                  (if (> (count draw-and-state) 0)
-                    (if (> (count draw-and-state) 1)
+                  (if (> (length draw-and-state) 0)
+                    (if (> (length draw-and-state) 1)
                       (list 'set! 'anima--state
                             (list (car draw-and-state) 'rend 'anima--state))
                       (list (car draw-and-state) 'rend))
@@ -118,9 +118,9 @@
 
 (hidden setter)
 (defdynamic setter [fn r color cs]
-  (if (= (count cs) 0)
+  (if (= (length cs) 0)
     (list fn r color color color 255)
-    (if (= (count cs) 2)
+    (if (= (length cs) 2)
       (list fn r color (car cs) (car (cdr cs)) 255)
       (list fn r color (car cs) (car (cdr cs)) (car (cdr (cdr cs)))))))
 
