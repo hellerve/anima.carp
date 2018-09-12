@@ -117,12 +117,12 @@
                     (list 'SDL.delay (list '/ 1000 'fr))))))))))
 
 (hidden setter)
-(defdynamic setter [fn r color cs]
+(defdynamic setter [f r color cs]
   (if (= (length cs) 0)
-    (list fn r color color color 255)
+    (list f r color color color 255)
     (if (= (length cs) 2)
-      (list fn r color (car cs) (car (cdr cs)) 255)
-      (list fn r color (car cs) (car (cdr cs)) (car (cdr (cdr cs)))))))
+      (list f r color (car cs) (car (cdr cs)) 255)
+      (list f r color (car cs) (car (cdr cs)) (car (cdr (cdr cs)))))))
 
 (defmacro color [r color :rest cs]
   (setter 'set-color r color cs))
