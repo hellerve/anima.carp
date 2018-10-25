@@ -37,9 +37,7 @@
 
   (doc rect "Draw a rectangle with (ax, ay) as origin, w as width, and h as height.")
   (defn rect [rend ax ay w h]
-    (let [bx ax
-          by ay
-          r (SDL.rect bx by (- w bx) (- h by))]
+    (let [r (SDL.rect ax ay w h)]
       (SDL.render-fill-rect rend (address r))))
 
   (hidden cvrt-)
