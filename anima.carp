@@ -78,6 +78,22 @@
                                                (SDLApp.stop app)))
                 ())))))
 
+  (defn save [app rend w h filename]
+    (let-do [window (SDLApp.window app)
+             surface (SDL.create-rgb-surface 0 w h 32
+                                             (Int.bit-shift-left 255 16)
+                                             (Int.bit-shift-left 255 8)
+                                             255
+                                             (Int.bit-shift-left 255 24))]
+      (ignore
+        (SDL.render-read-pixels rend NULL (SDL.get-window-pixel-format @window)
+                                (SDL.surface-pixels surface)
+                                (SDL.surface-pitch surface)))
+      (ignore (SDL.save-bmp surface filename))
+      (SDL.free-surface surface)
+    )
+  )
+
   ;(doc defsketch "Create a sketch with a name, width, height, and setup function. Optionally takes a draw and state function as well.")
   ;(sig defsketch (Fn [&String Int Int (Fn [SDL.Renderer] ())] ()))
   ;(doc color "Set the current drawing color to color. The color can have 1 component (greyscale, from 0 to 255), three components (RGB value, from 0 to 255), or 4 components (RGBA value, from 0 to 255).")
@@ -113,6 +129,18 @@
                   (list 'if (list '= 'fr 0)
                     (list 'forever-do (list 'handle-events (list 'ref 'app) 'rend))
                     (list 'SDL.delay (list '/ 1000 'fr))))))))))
+
+(defmacro defpicture [name w h rend]
+  (list 'defn 'main (array)
+    (list 'let (array 'app (list 'SDLApp.create name w h)
+                      'rend (list 'copy (list 'SDLApp.renderer
+                                              (list 'ref 'app)))
+                      'seed (list 'Double.from-long (list 'System.nanotime)))
+      (list 'do
+        (project-set! "title" name)
+        (list 'Random.seed-from 'seed)
+        (list rend 'rend)
+        (list 'Anima.save (list 'ref 'app) 'rend w h (list 'str* name (list 'fmt "%.0f" 'seed) ".bmp"))))))
 
 (hidden setter)
 (defdynamic setter [f r color cs]
