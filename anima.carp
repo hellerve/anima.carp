@@ -31,10 +31,6 @@
   (defn rand [i]
     (Int.random-between 0 i))
 
-  (doc random-between "Generate a random integer from min to max.")
-  (defn random-between [min max]
-    (Int.random-between min max))
-
   (doc rect "Draw a rectangle with (ax, ay) as origin, w as width, and h as height.")
   (defn rect [rend ax ay w h]
     (let [r (SDL.rect ax ay w h)]
@@ -143,7 +139,7 @@
         (list 'Anima.save (list 'ref 'app) 'rend w h (list 'str* name (list 'fmt "%.0f" 'seed) ".bmp"))))))
 
 (hidden setter)
-(defdynamic setter [f r color cs]
+(defndynamic setter [f r color cs]
   (if (= (length cs) 0)
     (list f r color color color 255)
     (if (= (length cs) 2)
