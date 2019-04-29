@@ -1,0 +1,13 @@
+(load "anima.carp")
+
+(defndynamic gendocs []
+       (do
+         (Project.config "title" "Anima")
+         (Project.config "docs-directory" "./docs/")
+         (Project.config "docs-logo" "logo.png")
+         (Project.config "docs-styling" "style.css")
+         (Project.config "docs-generate-index" false)
+         (save-docs Anima)))
+
+(gendocs)
+(quit)
