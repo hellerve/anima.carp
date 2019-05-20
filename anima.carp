@@ -1,5 +1,5 @@
-(load "sdl.carp")
-(load "sdl_image.carp")
+(load "SDL.carp")
+(load "SDL_image.carp")
 (load "Vector.carp")
 
 (use-all Vector2)
