@@ -9,8 +9,8 @@
     (background rend 20)
     (color rend 200)
     (for [i 0 300]
-      (let [x (Anima.random-between margin (- size margin))
-            y (Anima.random-between margin (- size margin))]
+      (let [x (random-between margin (- size margin))
+            y (random-between margin (- size margin))]
         (line rend x y x x)))))
 
 (defpicture "Whispering Drink" size size render)

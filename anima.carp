@@ -109,7 +109,7 @@
                                         (list (car (cdr draw-and-state)))
                                         0)) ;; TODO: remove standin
         (list 'do
-          (project-set! "title" name)
+          (Project.config "title" name)
           (list 'Random.seed)
           (if (> (length draw-and-state) 0) (list setup 'rend) (list))
           (list 'while true
@@ -133,7 +133,7 @@
                                               (list 'ref 'app)))
                       'seed (list 'Double.from-long (list 'System.nanotime)))
       (list 'do
-        (project-set! "title" name)
+        (Project.config "title" name)
         (list 'Random.seed-from 'seed)
         (list rend 'rend)
         (list 'Anima.save (list 'ref 'app) 'rend w h (list 'str* name (list 'fmt "%.0f" 'seed) ".bmp"))))))

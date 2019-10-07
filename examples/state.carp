@@ -16,6 +16,6 @@
     (background render 0)
     (color render 255)
     (line render @(State.x &s) @(State.y &s) 400 400)
-    (=> s (State.update-x inc10) (State.update-y inc10))))
+    (=> s (State.update-x &inc10) (State.update-y &inc10))))
 
 (defsketch "stateful" 400 400 setup draw state)

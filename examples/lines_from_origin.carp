@@ -6,7 +6,7 @@
 
 (defn lines-from [r x y]
   (for [i 0 n-lines]
-    (let-do [whitish (Anima.random-between 80 255)]
+    (let-do [whitish (random-between 80 255)]
       (color r whitish whitish whitish 255)
       (line r x y (Anima.rand s) (Anima.rand s)))))
 
