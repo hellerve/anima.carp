@@ -7,9 +7,9 @@
 (defn draw [rend]
   (do
     (let [col (hsb-to-rgb hue 50 50)]
-      (background rend @(nth &col 0) @(nth &col 1) @(nth &col 2)))
+      (background rend @(unsafe-nth &col 0) @(unsafe-nth &col 1) @(unsafe-nth &col 2)))
     (let-do [col (hsb-to-rgb (- 255 hue) 50 50)]
-      (color rend @(nth &col 0) @(nth &col 1) @(nth &col 2))
+      (color rend @(unsafe-nth &col 0) @(unsafe-nth &col 1) @(unsafe-nth &col 2))
       (rect rend 50 50 150 150))
     (set! hue (+ hue 2))
     (when (> hue 360) (set! hue 0))))
