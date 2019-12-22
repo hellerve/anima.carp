@@ -3,7 +3,7 @@ html {
 }
 
 a {
-    color: #f00;
+    color: #000;
 }
 
 .logo {
@@ -23,8 +23,8 @@ ul {
     line-height: 1.4em;
 }
 
-.title {
-    font-size: 1.5em;
+.module-description {
+    margin-bottom: 3em;
 }
 
 .content {
@@ -34,20 +34,13 @@ ul {
 }
 
 h1 {
-    margin-bottom: 1.5em;
+    margin-bottom: 1em;
+    font-weight: 400;
 }
 
 h3 {
     margin: 0em;
-}
-
-.anchor {
-    color: #000;
-    text-decoration: none;
-}
-
-.anchor:hover {
-    text-decoration: underline;
+    font-weight: 400;
 }
 
 .binder {
@@ -56,10 +49,15 @@ h3 {
 
 .sig {
     font-family: "Hasklig", "Lucida Console", monospace;
+    margin: 0.5em 0em 0.5em 0em;
 }
 
-.doc {
-    /* font-style: italic; */
+.args {
+    background-color: #eee;
+    display: inline-block;
+    white-space: normal;
+    margin: 0;
+    margin-bottom: 1em;
 }
 
 .description {
@@ -101,4 +99,3 @@ h3 {
     }
 }
 .title, .index { display: none; }
-

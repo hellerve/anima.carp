@@ -4,13 +4,36 @@
 
 (use-all Vector2)
 
+(doc Anima "
+A microframework for drawing.
+
+```
+(load \"anima.carp\")
+(use Anima)
+
+(defn setup [rend]
+  (framerate 0)) ; shortcut for a static sketch
+
+(defn draw [rend]
+  (do
+    (color rend 255)
+    (line rend 0 0 800 800)))
+
+(defsketch \"One line to rule them all\" 800 800
+  setup
+  draw)
+```")
+
 (defmodule Anima
   (def fr 60)
   (hidden fr)
   (private fr)
 
   ; super naive way
-  (doc framerate "Set the framerate to n per second.")
+  (doc framerate "Set the framerate to `n` frames per second.
+
+This will set a maximum, but cannot guarantee that exactly `n` frames can be
+produced per second.")
   (defn framerate [n]
     (set! fr n))
 
@@ -23,20 +46,21 @@
     (SDL.set-render-draw-color rend r g b alpha)
     (SDL.render-clear rend))
 
-  (doc line "Draw a line from (ax, ay) to (bx, by).")
+  (doc line "Draw a line from (`ax`, `ay`) to (`bx`, `by`).")
   (defn line [rend ax ay bx by]
     (SDL.render-draw-line rend ax ay bx by))
 
-  (doc rand "Generate a random integer from 0 to i.")
+  (doc rand "Generate a random integer from `0` to `i`.")
   (defn rand [i]
     (Int.random-between 0 i))
 
-  (doc rect "Draw a rectangle with (ax, ay) as origin, w as width, and h as height.")
+  (doc rect "Draw a rectangle with (`ax`, `ay`) as origin, `w` as width, and `h`
+as height.")
   (defn rect [rend ax ay w h]
     (let [r (SDL.rect ax ay w h)]
       (SDL.render-fill-rect rend (address r))))
 
-  (doc point "Draw a point with (x, y) as its coordinates.")
+  (doc point "Draw a point with (`x`, `y`) as its coordinates.")
   (defn point [rend x y]
     (SDL.render-draw-point rend x y))
 
@@ -78,6 +102,8 @@
                                                (SDLApp.stop app)))
                 ())))))
 
+  (doc save "Low-level function that saves the current application and renderer
+to a file of dimensions (`w`, `h`) to `filename`.")
   (defn save [app rend w h filename]
     (let-do [window (SDLApp.window app)
              surface (SDL.create-rgb-surface 0 w h 32

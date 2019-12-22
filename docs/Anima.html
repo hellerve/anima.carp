@@ -29,7 +29,23 @@
                 Anima
             </h1>
             <div class="module-description">
-                
+                <p>A microframework for drawing.</p>
+<pre><code>(load &quot;anima.carp&quot;)
+(use Anima)
+
+(defn setup [rend]
+  (framerate 0)) ; shortcut for a static sketch
+
+(defn draw [rend]
+  (do
+    (color rend 255)
+    (line rend 0 0 800 800)))
+
+(defsketch &quot;One line to rule them all&quot; 800 800
+  setup
+  draw)
+</code></pre>
+
             </div>
             <div class="binder">
                 <a class="anchor" href="#framerate">
@@ -47,7 +63,9 @@
                     (framerate n)
                 </pre>
                 <p class="doc">
-                    <p>Set the framerate to n per second.</p>
+                    <p>Set the framerate to <code>n</code> frames per second.</p>
+<p>This will set a maximum, but cannot guarantee that exactly <code>n</code> frames can be
+produced per second.</p>
 
                 </p>
             </div>
@@ -87,7 +105,7 @@
                     (line rend ax ay bx by)
                 </pre>
                 <p class="doc">
-                    <p>Draw a line from (ax, ay) to (bx, by).</p>
+                    <p>Draw a line from (<code>ax</code>, <code>ay</code>) to (<code>bx</code>, <code>by</code>).</p>
 
                 </p>
             </div>
@@ -107,7 +125,7 @@
                     (point rend x y)
                 </pre>
                 <p class="doc">
-                    <p>Draw a point with (x, y) as its coordinates.</p>
+                    <p>Draw a point with (<code>x</code>, <code>y</code>) as its coordinates.</p>
 
                 </p>
             </div>
@@ -127,7 +145,7 @@
                     (rand i)
                 </pre>
                 <p class="doc">
-                    <p>Generate a random integer from 0 to i.</p>
+                    <p>Generate a random integer from <code>0</code> to <code>i</code>.</p>
 
                 </p>
             </div>
@@ -147,7 +165,8 @@
                     (rect rend ax ay w h)
                 </pre>
                 <p class="doc">
-                    <p>Draw a rectangle with (ax, ay) as origin, w as width, and h as height.</p>
+                    <p>Draw a rectangle with (<code>ax</code>, <code>a ) as origin, </code>w<code>as width, and</code>h`
+as height.</p>
 
                 </p>
             </div>
@@ -167,7 +186,9 @@
                     (save app rend w h filename)
                 </pre>
                 <p class="doc">
-                    
+                    <p>Low-level function that saves the current application and renderer
+to a file of dimensions (<code>w</code>, <code>h</code>) to <code>filename</code>.</p>
+
                 </p>
             </div>
         </div>
