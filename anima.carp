@@ -36,6 +36,10 @@
     (let [r (SDL.rect ax ay w h)]
       (SDL.render-fill-rect rend (address r))))
 
+  (doc point "Draw a point with (x, y) as its coordinates.")
+  (defn point [rend x y]
+    (SDL.render-draw-point rend x y))
+
   (hidden cvrt-)
   (private cvrt-)
   (defn cvrt- [c]
