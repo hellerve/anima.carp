@@ -7,7 +7,7 @@
 
 (defn setup [rend]
   (do
-    (Anima.background rend 0)
+    (background rend 0)
     (framerate 1)))
 
 (defn draw [rend]
