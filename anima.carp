@@ -131,42 +131,44 @@ to a file of dimensions (`w`, `h`) to `filename`.")
 (defmacro defsketch [name w h setup :rest draw-and-state]
   (if (< 2 (length draw-and-state))
     (macro-error "Cannot define sketch with more than six arguments.")
+    (eval
+      (list 'defn 'main (array)
+        (list 'let (array 'app (list 'SDLApp.create name w h)
+                          'rend (list 'copy (list 'SDLApp.renderer
+                                                  (list 'ref 'app)))
+                          'anima--state (if (= (length draw-and-state) 2)
+                                          (list (car (cdr draw-and-state)))
+                                          0)) ;; TODO: remove standin
+          (list 'do
+            (Project.config "title" name)
+            (list 'Random.seed)
+            (if (> (length draw-and-state) 0) (list setup 'rend) (list))
+            (list 'while true
+              (list 'do
+                    (list 'handle-events (list 'ref 'app) 'rend)
+                    (if (> (length draw-and-state) 0)
+                      (if (> (length draw-and-state) 1)
+                        (list 'set! 'anima--state
+                              (list (car draw-and-state) 'rend 'anima--state))
+                        (list (car draw-and-state) 'rend))
+                      (list setup 'rend))
+                    (list 'SDL.render-present 'rend)
+                    (list 'if (list '= 'fr 0)
+                      (list 'forever-do (list 'handle-events (list 'ref 'app) 'rend))
+                      (list 'SDL.delay (list '/ 1000 'fr)))))))))))
+
+(defmacro defpicture [name w h rend]
+  (eval
     (list 'defn 'main (array)
       (list 'let (array 'app (list 'SDLApp.create name w h)
                         'rend (list 'copy (list 'SDLApp.renderer
                                                 (list 'ref 'app)))
-                        'anima--state (if (= (length draw-and-state) 2)
-                                        (list (car (cdr draw-and-state)))
-                                        0)) ;; TODO: remove standin
+                        'seed (list 'Double.from-long (list 'System.nanotime)))
         (list 'do
           (Project.config "title" name)
-          (list 'Random.seed)
-          (if (> (length draw-and-state) 0) (list setup 'rend) (list))
-          (list 'while true
-            (list 'do
-                  (list 'handle-events (list 'ref 'app) 'rend)
-                  (if (> (length draw-and-state) 0)
-                    (if (> (length draw-and-state) 1)
-                      (list 'set! 'anima--state
-                            (list (car draw-and-state) 'rend 'anima--state))
-                      (list (car draw-and-state) 'rend))
-                    (list setup 'rend))
-                  (list 'SDL.render-present 'rend)
-                  (list 'if (list '= 'fr 0)
-                    (list 'forever-do (list 'handle-events (list 'ref 'app) 'rend))
-                    (list 'SDL.delay (list '/ 1000 'fr))))))))))
-
-(defmacro defpicture [name w h rend]
-  (list 'defn 'main (array)
-    (list 'let (array 'app (list 'SDLApp.create name w h)
-                      'rend (list 'copy (list 'SDLApp.renderer
-                                              (list 'ref 'app)))
-                      'seed (list 'Double.from-long (list 'System.nanotime)))
-      (list 'do
-        (Project.config "title" name)
-        (list 'Random.seed-from 'seed)
-        (list rend 'rend)
-        (list 'Anima.save (list 'ref 'app) 'rend w h (list 'str* name (list 'fmt "%.0f" 'seed) ".bmp"))))))
+          (list 'Random.seed-from 'seed)
+          (list rend 'rend)
+          (list 'Anima.save (list 'ref 'app) 'rend w h (list 'str* name (list 'fmt "%.0f" 'seed) ".bmp")))))))
 
 (hidden setter)
 (defndynamic setter [f r color cs]
