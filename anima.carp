@@ -1,69 +1,264 @@
 (load "SDL.carp")
-(load "SDL_image.carp")
-(load "Vector.carp")
+(load "git@github.com:carpentry-org/cairo.carp@0.1.0")
 
-(use-all Vector2)
+;; Extra SDL bindings for texture management (not in core/SDL.carp).
+(defmodule SDL
+  (register create-texture (Fn [(Ptr SDL_Renderer) Int Int Int Int] (Ptr SDL_Texture)) "SDL_CreateTexture")
+  (register update-texture (Fn [(Ptr SDL_Texture) (Ptr SDL_Rect) (Ptr Byte) Int] Int) "SDL_UpdateTexture")
+  (register pixel-format-argb8888 Int "SDL_PIXELFORMAT_ARGB8888")
+  (register texture-access-streaming Int "SDL_TEXTUREACCESS_STREAMING"))
 
 (doc Anima "
-A microframework for drawing.
+A Processing-style microframework for drawing, backed by Cairo.
+
+Sketches receive a Cairo context to draw into. Anima tracks fill and stroke
+colors as module-level state, and each shape function applies them
+automatically (fill first, then stroke).
 
 ```
 (load \"anima.carp\")
 (use Anima)
 
-(defn setup [rend]
-  (framerate 0)) ; shortcut for a static sketch
+(defn setup [cr]
+  (framerate 0))
 
-(defn draw [rend]
+(defn draw [cr]
   (do
-    (color rend 255)
-    (line rend 0 0 800 800)))
+    (stroke-color 255)
+    (line cr 0.0 0.0 800.0 800.0)))
 
-(defsketch \"One line to rule them all\" 800 800
+(defsketch \"One line\" 800 800
   setup
   draw)
 ```")
 
 (defmodule Anima
+  ;; ---------------------------------------------------------------
+  ;; Drawing state
+  ;; ---------------------------------------------------------------
   (def fr 60)
-  (hidden fr)
-  (private fr)
 
-  ; super naive way
+  (def fill-on true)
+  (def fill-r 1.0)
+  (def fill-g 1.0)
+  (def fill-b 1.0)
+  (def fill-a 1.0)
+
+  (def stroke-on true)
+  (def stroke-r 0.0)
+  (def stroke-g 0.0)
+  (def stroke-b 0.0)
+  (def stroke-a 1.0)
+  (def stroke-w 1.0)
+
+  ;; ---------------------------------------------------------------
+  ;; Internal helpers
+  ;; ---------------------------------------------------------------
+  (hidden to-color)
+  (private to-color)
+  (defn to-color [c] (/ (Double.from-int c) 255.0))
+
+  (hidden apply-fill-stroke)
+  (private apply-fill-stroke)
+  (doc apply-fill-stroke "Apply the current fill and stroke state to the active
+path on `cr`, then consume the path.")
+  (defn apply-fill-stroke [cr]
+    (cond
+      (and fill-on stroke-on)
+        (do
+          (Cairo.set-source-rgba cr fill-r fill-g fill-b fill-a)
+          (Cairo.fill-preserve cr)
+          (Cairo.set-source-rgba cr stroke-r stroke-g stroke-b stroke-a)
+          (Cairo.set-line-width cr stroke-w)
+          (Cairo.stroke cr))
+      fill-on
+        (do
+          (Cairo.set-source-rgba cr fill-r fill-g fill-b fill-a)
+          (Cairo.fill cr))
+      stroke-on
+        (do
+          (Cairo.set-source-rgba cr stroke-r stroke-g stroke-b stroke-a)
+          (Cairo.set-line-width cr stroke-w)
+          (Cairo.stroke cr))
+      (Cairo.new-path cr)))
+
+  (hidden apply-stroke-only)
+  (private apply-stroke-only)
+  (defn apply-stroke-only [cr]
+    (if stroke-on
+      (do
+        (Cairo.set-source-rgba cr stroke-r stroke-g stroke-b stroke-a)
+        (Cairo.set-line-width cr stroke-w)
+        (Cairo.stroke cr))
+      (Cairo.new-path cr)))
+
+  ;; ---------------------------------------------------------------
+  ;; State setters
+  ;; ---------------------------------------------------------------
   (doc framerate "Set the framerate to `n` frames per second.
 
 This will set a maximum, but cannot guarantee that exactly `n` frames can be
-produced per second.")
+produced per second. Set to 0 for a static sketch that draws once.")
   (defn framerate [n]
     (set! fr n))
 
-  (hidden set-color)
-  (defn set-color [rend r g b alpha]
-    (SDL.set-render-draw-color rend r g b alpha))
+  (doc set-fill "Set the fill color using RGBA components in 0..255.")
+  (defn set-fill [r g b a]
+    (do
+      (set! fill-on true)
+      (set! fill-r (to-color r))
+      (set! fill-g (to-color g))
+      (set! fill-b (to-color b))
+      (set! fill-a (to-color a))))
 
-  (hidden set-background)
-  (defn-do set-background [rend r g b alpha]
-    (SDL.set-render-draw-color rend r g b alpha)
-    (SDL.render-clear rend))
+  (doc set-stroke "Set the stroke color using RGBA components in 0..255.")
+  (defn set-stroke [r g b a]
+    (do
+      (set! stroke-on true)
+      (set! stroke-r (to-color r))
+      (set! stroke-g (to-color g))
+      (set! stroke-b (to-color b))
+      (set! stroke-a (to-color a))))
 
-  (doc line "Draw a line from (`ax`, `ay`) to (`bx`, `by`).")
-  (defn line [rend ax ay bx by]
-    (SDL.render-draw-line rend ax ay bx by))
+  (doc no-fill "Disable filling for subsequent shapes.")
+  (defn no-fill []
+    (set! fill-on false))
 
-  (doc rand "Generate a random integer from `0` to `i`.")
-  (defn rand [i]
-    (Int.random-between 0 i))
+  (doc no-stroke "Disable stroking for subsequent shapes.")
+  (defn no-stroke []
+    (set! stroke-on false))
 
-  (doc rect "Draw a rectangle with (`ax`, `ay`) as origin, `w` as width, and `h`
-as height.")
-  (defn rect [rend ax ay w h]
-    (let [r (SDL.rect ax ay w h)]
-      (SDL.render-fill-rect rend (address r))))
+  (doc stroke-weight "Set the stroke width in pixels.")
+  (defn stroke-weight [w]
+    (set! stroke-w w))
 
-  (doc point "Draw a point with (`x`, `y`) as its coordinates.")
-  (defn point [rend x y]
-    (SDL.render-draw-point rend x y))
+  ;; ---------------------------------------------------------------
+  ;; Background
+  ;; ---------------------------------------------------------------
+  (doc set-background "Clear the surface with an RGBA color (0..255 components).")
+  (defn set-background [cr r g b a]
+    (do
+      (Cairo.set-source-rgba cr (to-color r) (to-color g) (to-color b) (to-color a))
+      (Cairo.paint cr)))
 
+  ;; ---------------------------------------------------------------
+  ;; Drawing primitives
+  ;; ---------------------------------------------------------------
+  (doc line "Draw a line from (`x1`, `y1`) to (`x2`, `y2`). Stroke only.")
+  (defn line [cr x1 y1 x2 y2]
+    (do
+      (Cairo.move-to cr x1 y1)
+      (Cairo.line-to cr x2 y2)
+      (apply-stroke-only cr)))
+
+  (doc rect "Draw a rectangle at (`x`, `y`) with width `w` and height `h`.")
+  (defn rect [cr x y w h]
+    (do
+      (Cairo.rectangle cr x y w h)
+      (apply-fill-stroke cr)))
+
+  (doc circle "Draw a circle centered at (`cx`, `cy`) with radius `r`.")
+  (defn circle [cr cx cy r]
+    (do
+      (Cairo.new-sub-path cr)
+      (Cairo.arc cr cx cy r 0.0 6.283185307179586)
+      (Cairo.close-path cr)
+      (apply-fill-stroke cr)))
+
+  (doc ellipse "Draw an ellipse centered at (`cx`, `cy`) with radii `rx` and `ry`.")
+  (defn ellipse [cr cx cy rx ry]
+    (do
+      (Cairo.save cr)
+      (Cairo.translate cr cx cy)
+      (Cairo.scale cr rx ry)
+      (Cairo.new-sub-path cr)
+      (Cairo.arc cr 0.0 0.0 1.0 0.0 6.283185307179586)
+      (Cairo.close-path cr)
+      (Cairo.restore cr)
+      (apply-fill-stroke cr)))
+
+  (doc arc "Draw an arc centered at (`cx`, `cy`) with radius `r` from `a1` to `a2` radians. Stroke only.")
+  (defn arc [cr cx cy r a1 a2]
+    (do
+      (Cairo.new-sub-path cr)
+      (Cairo.arc cr cx cy r a1 a2)
+      (apply-stroke-only cr)))
+
+  (doc triangle "Draw a triangle with vertices (`x1`, `y1`), (`x2`, `y2`), (`x3`, `y3`).")
+  (defn triangle [cr x1 y1 x2 y2 x3 y3]
+    (do
+      (Cairo.move-to cr x1 y1)
+      (Cairo.line-to cr x2 y2)
+      (Cairo.line-to cr x3 y3)
+      (Cairo.close-path cr)
+      (apply-fill-stroke cr)))
+
+  (doc point "Draw a single point at (`x`, `y`). Uses a 1-pixel filled circle.")
+  (defn point [cr x y]
+    (do
+      (Cairo.new-sub-path cr)
+      (Cairo.arc cr x y 0.5 0.0 6.283185307179586)
+      (Cairo.close-path cr)
+      (let-do [prev-fill fill-on
+               prev-stroke stroke-on]
+        (set! fill-on true)
+        (set! fill-r stroke-r)
+        (set! fill-g stroke-g)
+        (set! fill-b stroke-b)
+        (set! fill-a stroke-a)
+        (set! stroke-on false)
+        (apply-fill-stroke cr)
+        (set! fill-on prev-fill)
+        (set! stroke-on prev-stroke))))
+
+  (doc bezier "Draw a cubic Bezier curve from (`x1`, `y1`) through control points
+(`cx1`, `cy1`) and (`cx2`, `cy2`) to (`x2`, `y2`). Stroke only.")
+  (defn bezier [cr x1 y1 cx1 cy1 cx2 cy2 x2 y2]
+    (do
+      (Cairo.move-to cr x1 y1)
+      (Cairo.curve-to cr cx1 cy1 cx2 cy2 x2 y2)
+      (apply-stroke-only cr)))
+
+  ;; ---------------------------------------------------------------
+  ;; Transforms
+  ;; ---------------------------------------------------------------
+  (doc push "Save the current Cairo state (transforms, clip, source, line style).")
+  (defn push [cr] (Cairo.save cr))
+
+  (doc pop "Restore the most recently pushed Cairo state.")
+  (defn pop [cr] (Cairo.restore cr))
+
+  (doc translate "Translate the coordinate origin by (`x`, `y`).")
+  (defn translate [cr x y] (Cairo.translate cr x y))
+
+  (doc rotate "Rotate the coordinate system by `angle` radians.")
+  (defn rotate [cr angle] (Cairo.rotate cr angle))
+
+  (doc scale "Scale the coordinate system by (`sx`, `sy`).")
+  (defn scale [cr sx sy] (Cairo.scale cr sx sy))
+
+  ;; ---------------------------------------------------------------
+  ;; Text
+  ;; ---------------------------------------------------------------
+  (doc text "Draw `s` at position (`x`, `y`) using the current fill color.")
+  (defn text [cr s x y]
+    (do
+      (Cairo.set-source-rgba cr fill-r fill-g fill-b fill-a)
+      (Cairo.move-to cr x y)
+      (Cairo.show-text cr (cstr s))))
+
+  (doc text-size "Set the font size in points.")
+  (defn text-size [cr size]
+    (Cairo.set-font-size cr size))
+
+  (doc text-font "Set the font face by family name (e.g. \"monospace\").")
+  (defn text-font [cr family]
+    (Cairo.select-font-face cr (cstr family)
+                            Cairo.slant-normal Cairo.weight-normal))
+
+  ;; ---------------------------------------------------------------
+  ;; Color helpers
+  ;; ---------------------------------------------------------------
   (hidden cvrt-)
   (private cvrt-)
   (defn cvrt- [c]
@@ -91,10 +286,17 @@ as height.")
             5 [(cvrt- b) (cvrt- p) (cvrt- q)]
             [])))))
 
+  (doc rand "Generate a random integer from `0` to `i`.")
+  (defn rand [i]
+    (Int.random-between 0 i))
+
+  ;; ---------------------------------------------------------------
+  ;; Event handling (SDL)
+  ;; ---------------------------------------------------------------
   (hidden handle-events)
-  (defn handle-events [app rend]
+  (defn handle-events [app]
     (let [event (SDL.Event.init)]
-      (while (SDL.Event.poll (address event))
+      (while (SDL.Event.poll (address &event))
         (let [et (SDL.Event.type &event)]
           (cond (= et SDL.Event.quit) (SDLApp.stop app)
                 (= et SDL.Event.key-down) (let [key (SDL.Event.keycode &event)]
@@ -102,84 +304,131 @@ as height.")
                                                (SDLApp.stop app)))
                 ())))))
 
-  (doc save "Low-level function that saves the current application and renderer
-to a file of dimensions (`w`, `h`) to `filename`.")
-  (defn save [app rend w h filename]
-    (let-do [window (SDLApp.window app)
-             surface (SDL.create-rgb-surface 0 w h 32
-                                             (Int.bit-shift-left 255 16)
-                                             (Int.bit-shift-left 255 8)
-                                             255
-                                             (Int.bit-shift-left 255 24))]
-      (ignore
-        (SDL.render-read-pixels rend NULL (SDL.get-window-pixel-format @window)
-                                (SDL.surface-pixels surface)
-                                (SDL.surface-pitch surface)))
-      (ignore (SDL.save-bmp surface filename))
-      (SDL.free-surface surface)
-    )
-  )
+  ;; ---------------------------------------------------------------
+  ;; Cairo to SDL blit
+  ;; ---------------------------------------------------------------
+  (hidden blit)
+  (doc blit "Flush the Cairo surface and copy its pixels into the SDL texture,
+then present via the SDL renderer.")
+  (defn blit [rend tex surf]
+    (do
+      (Cairo.surface-flush surf)
+      (ignore (SDL.update-texture tex NULL
+                                  (Cairo.image-surface-get-data surf)
+                                  (Cairo.image-surface-get-stride surf)))
+      (SDL.render-clear rend)
+      (SDL.render-copy rend tex NULL NULL)
+      (SDL.render-present rend)))
 
-  ;(doc defsketch "Create a sketch with a name, width, height, and setup function. Optionally takes a draw and state function as well.")
-  ;(sig defsketch (Fn [&String Int Int (Fn [SDL.Renderer] ())] ()))
-  ;(doc color "Set the current drawing color to color. The color can have 1 component (greyscale, from 0 to 255), three components (RGB value, from 0 to 255), or 4 components (RGBA value, from 0 to 255).")
-  ;(sig color (Fn [SDL.Renderer Int] ()))
-  ;(doc background "Set the current background color to color. The color can have 1 component (greyscale, from 0 to 255), three components (RGB value, from 0 to 255), or 4 components (RGBA value, from 0 to 255). **Warning**: This will also clear the screen with that color.")
-  ;(sig background (Fn [SDL.Renderer Int] ()))
+  ;; ---------------------------------------------------------------
+  ;; Save
+  ;; ---------------------------------------------------------------
+  (doc save-png "Write the Cairo surface to a PNG file.")
+  (defn save-png [surf filename]
+    (ignore (Cairo.surface-write-to-png surf (cstr filename))))
+
+  (hidden make-filename)
+  (doc make-filename "Build a filename from a prefix, a seed, and a .png extension.")
+  (defn make-filename [prefix seed]
+    (String.concat &[@prefix (fmt "%.0f" seed) @".png"]))
 )
 
+;; =================================================================
+;; Macros (top-level, outside the module)
+;; =================================================================
+
+;; --- Color setter helpers ---
+(hidden color-setter)
+(defndynamic color-setter [f args]
+  (if (= (length args) 1)
+    (list f (car args) (car args) (car args) 255)
+    (if (= (length args) 3)
+      (list f (car args) (car (cdr args)) (car (cdr (cdr args))) 255)
+      (if (= (length args) 4)
+        (list f (car args) (car (cdr args)) (car (cdr (cdr args))) (car (cdr (cdr (cdr args)))))
+        (macro-error "color expects 1, 3, or 4 components")))))
+
+(hidden color-setter-with-ctx)
+(defndynamic color-setter-with-ctx [f cr args]
+  (if (= (length args) 1)
+    (list f cr (car args) (car args) (car args) 255)
+    (if (= (length args) 3)
+      (list f cr (car args) (car (cdr args)) (car (cdr (cdr args))) 255)
+      (if (= (length args) 4)
+        (list f cr (car args) (car (cdr args)) (car (cdr (cdr args))) (car (cdr (cdr (cdr args)))))
+        (macro-error "color expects 1, 3, or 4 components")))))
+
+(doc fill-color "Set the fill color. Accepts 1 (gray), 3 (RGB), or 4 (RGBA) components in 0..255.")
+(defmacro fill-color [col :rest cols]
+  (color-setter 'Anima.set-fill (cons col cols)))
+
+(doc stroke-color "Set the stroke color. Accepts 1 (gray), 3 (RGB), or 4 (RGBA) components in 0..255.")
+(defmacro stroke-color [col :rest cols]
+  (color-setter 'Anima.set-stroke (cons col cols)))
+
+(doc background "Clear the surface with a color. Accepts 1 (gray), 3 (RGB), or 4 (RGBA) components in 0..255.")
+(defmacro background [cr col :rest cols]
+  (color-setter-with-ctx 'Anima.set-background cr (cons col cols)))
+
+;; --- defsketch ---
+(doc defsketch "Create a sketch with a name, width, height, and setup function.
+Optionally takes a draw function and an init-state function.
+
+The setup and draw callbacks receive a `(Ptr CairoContext)`.
+
+```
+(defsketch \"My Sketch\" 800 600 setup draw)
+```")
 (defmacro defsketch [name w h setup :rest draw-and-state]
   (if (< 2 (length draw-and-state))
     (macro-error "Cannot define sketch with more than six arguments.")
-    (eval
-      (list 'defn 'main (array)
-        (list 'let (array 'app (list 'SDLApp.create name w h)
-                          'rend (list 'copy (list 'SDLApp.renderer
-                                                  (list 'ref 'app)))
-                          'anima--state (if (= (length draw-and-state) 2)
-                                          (list (car (cdr draw-and-state)))
-                                          0)) ;; TODO: remove standin
-          (list 'do
-            (Project.config "title" name)
-            (list 'Random.seed)
-            (if (> (length draw-and-state) 0) (list setup 'rend) (list))
-            (list 'while true
-              (list 'do
-                    (list 'Anima.handle-events (list 'ref 'app) 'rend)
-                    (if (> (length draw-and-state) 0)
-                      (if (> (length draw-and-state) 1)
-                        (list 'set! 'anima--state
-                              (list (car draw-and-state) 'rend 'anima--state))
-                        (list (car draw-and-state) 'rend))
-                      (list setup 'rend))
-                    (list 'SDL.render-present 'rend)
-                    (list 'if (list '= 'fr 0)
-                      (list 'forever-do (list 'Anima.handle-events (list 'ref 'app) 'rend))
-                      (list 'SDL.delay (list '/ 1000 'fr)))))))))))
-
-(defmacro defpicture [name w h rend]
-  (eval
     (list 'defn 'main (array)
-      (list 'let (array 'app (list 'SDLApp.create name w h)
-                        'rend (list 'copy (list 'SDLApp.renderer
-                                                (list 'ref 'app)))
-                        'seed (list 'Double.from-long (list 'System.nanotime)))
+      (list 'let (array
+        'app (list 'SDLApp.create name w h)
+        'rend (list 'copy (list 'SDLApp.renderer (list 'ref 'app)))
+        'anima--surf (list 'Cairo.image-surface-create 'Cairo.format-argb32 w h)
+        'anima--cr (list 'Cairo.create 'anima--surf)
+        'anima--tex (list 'SDL.create-texture 'rend 'SDL.pixel-format-argb8888
+                         'SDL.texture-access-streaming w h)
+        'anima--state (if (= (length draw-and-state) 2)
+                        (list (car (cdr draw-and-state)))
+                        0))
         (list 'do
           (Project.config "title" name)
-          (list 'Random.seed-from 'seed)
-          (list rend 'rend)
-          (list 'Anima.save (list 'ref 'app) 'rend w h (list 'str* name (list 'fmt "%.0f" 'seed) ".bmp")))))))
+          (list 'Random.seed)
+          (if (> (length draw-and-state) 0) (list setup 'anima--cr) (list))
+          (list 'while true
+            (list 'do
+                  (list 'Anima.handle-events (list 'ref 'app))
+                  (if (> (length draw-and-state) 0)
+                    (if (> (length draw-and-state) 1)
+                      (list 'set! 'anima--state
+                            (list (car draw-and-state) 'anima--cr 'anima--state))
+                      (list (car draw-and-state) 'anima--cr))
+                    (list setup 'anima--cr))
+                  (list 'Anima.blit 'rend 'anima--tex 'anima--surf)
+                  (list 'if (list '= 'Anima.fr 0)
+                    (list 'forever-do (list 'Anima.handle-events (list 'ref 'app)))
+                    (list 'SDL.delay (list '/ 1000 'Anima.fr))))))))))
 
-(hidden setter)
-(defndynamic setter [f r color cs]
-  (if (= (length cs) 0)
-    (list f r color color color 255)
-    (if (= (length cs) 2)
-      (list f r color (car cs) (car (cdr cs)) 255)
-      (list f r color (car cs) (car (cdr cs)) (car (cdr (cdr cs)))))))
+;; --- defpicture ---
+(doc defpicture "Create a static picture and save it to PNG. No SDL window needed
+at runtime (the window opens briefly for setup, then the image is written).
 
-(defmacro color [r color :rest cs]
-  (setter 'set-color r color cs))
-
-(defmacro background [r background :rest cs]
-  (setter 'set-background r background cs))
+```
+(defpicture \"My Picture\" 800 600 render)
+```")
+(defmacro defpicture [name w h draw]
+  (list 'defn 'main (array)
+    (list 'let (array
+      'anima--surf (list 'Cairo.image-surface-create 'Cairo.format-argb32 w h)
+      'anima--cr (list 'Cairo.create 'anima--surf)
+      'seed (list 'Double.from-long (list 'Uint64.to-long (list 'System.nanotime))))
+      (list 'do
+        (Project.config "title" name)
+        (list 'Random.seed-from 'seed)
+        (list draw 'anima--cr)
+        (list 'Anima.save-png 'anima--surf
+              (list 'ref (list 'Anima.make-filename name 'seed)))
+        (list 'Cairo.destroy 'anima--cr)
+        (list 'Cairo.surface-destroy 'anima--surf)))))

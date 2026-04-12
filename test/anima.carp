@@ -1,0 +1,146 @@
+(load "Test.carp")
+(load "anima.carp")
+
+(use-all Test Anima)
+
+;; Tiny file-existence helper.
+(deftemplate file-exists? (Fn [(Ptr CChar)] Bool)
+  "bool $NAME(const char* path)"
+  "$DECL { FILE* f = fopen(path, \"r\"); if (f) { fclose(f); return true; } return false; }")
+
+;; --- hsb-to-rgb ---
+
+(defn hsb-red-ok? []
+  (let [rgb (hsb-to-rgb 0 100 100)]
+    (and (= 255 @(Array.unsafe-nth &rgb 0))
+         (and (= 0 @(Array.unsafe-nth &rgb 1))
+              (= 0 @(Array.unsafe-nth &rgb 2))))))
+
+(defn hsb-green-ok? []
+  (let [rgb (hsb-to-rgb 120 100 100)]
+    (and (= 0 @(Array.unsafe-nth &rgb 0))
+         (and (= 255 @(Array.unsafe-nth &rgb 1))
+              (= 0 @(Array.unsafe-nth &rgb 2))))))
+
+(defn hsb-gray-ok? []
+  (let [rgb (hsb-to-rgb 0 0 50)]
+    (and (= @(Array.unsafe-nth &rgb 0) @(Array.unsafe-nth &rgb 1))
+         (= @(Array.unsafe-nth &rgb 1) @(Array.unsafe-nth &rgb 2)))))
+
+;; --- State setters ---
+
+(defn fill-state-ok? []
+  (do
+    (set-fill 128 64 32 200)
+    (and fill-on
+         (and (Double.approx fill-r (/ 128.0 255.0))
+              (and (Double.approx fill-g (/ 64.0 255.0))
+                   (Double.approx fill-a (/ 200.0 255.0)))))))
+
+(defn stroke-state-ok? []
+  (do
+    (set-stroke 10 20 30 255)
+    (and stroke-on
+         (and (Double.approx stroke-r (/ 10.0 255.0))
+              (Double.approx stroke-g (/ 20.0 255.0))))))
+
+(defn no-fill-ok? []
+  (do
+    (no-fill)
+    (let [ok (not fill-on)]
+      (do (set-fill 255 255 255 255) ok))))
+
+(defn no-stroke-ok? []
+  (do
+    (no-stroke)
+    (let [ok (not stroke-on)]
+      (do (set-stroke 0 0 0 255) ok))))
+
+(defn stroke-weight-ok? []
+  (do
+    (stroke-weight 3.5)
+    (let [ok (Double.approx stroke-w 3.5)]
+      (do (stroke-weight 1.0) ok))))
+
+;; --- Drawing + defpicture ---
+
+(defn draw-test-picture [cr]
+  (do
+    (set-background cr 255 255 255 255)
+    (set-stroke 0 0 0 255)
+    (line cr 10.0 10.0 90.0 90.0)
+    (set-fill 255 0 0 255)
+    (rect cr 20.0 20.0 60.0 60.0)
+    (circle cr 50.0 50.0 20.0)
+    (triangle cr 10.0 90.0 50.0 10.0 90.0 90.0)))
+
+(defn draw-and-save-ok? []
+  (let-do [surf (Cairo.image-surface-create Cairo.format-argb32 100 100)
+           cr (Cairo.create surf)]
+    (draw-test-picture cr)
+    (let-do [ok (Cairo.success? (Cairo.surface-write-to-png surf (cstr "anima-test.png")))]
+      (Cairo.destroy cr)
+      (Cairo.surface-destroy surf)
+      ok)))
+
+(defn defpicture-shapes-ok? []
+  (let-do [surf (Cairo.image-surface-create Cairo.format-argb32 100 100)
+           cr (Cairo.create surf)]
+    (set-fill 0 0 255 255)
+    (no-stroke)
+    (ellipse cr 50.0 50.0 40.0 25.0)
+    (set-stroke 0 255 0 255)
+    (set-fill 0 0 0 0)
+    (arc cr 50.0 50.0 30.0 0.0 3.14159)
+    (bezier cr 0.0 0.0 25.0 100.0 75.0 0.0 100.0 100.0)
+    (point cr 50.0 50.0)
+    (let-do [ok (Cairo.success? (Cairo.status cr))]
+      (Cairo.destroy cr)
+      (Cairo.surface-destroy surf)
+      ok)))
+
+(defn transforms-ok? []
+  (let-do [surf (Cairo.image-surface-create Cairo.format-argb32 100 100)
+           cr (Cairo.create surf)]
+    (push cr)
+    (translate cr 50.0 50.0)
+    (rotate cr 0.5)
+    (scale cr 2.0 2.0)
+    (set-stroke 0 0 0 255)
+    (line cr -10.0 0.0 10.0 0.0)
+    (pop cr)
+    (let-do [ok (Cairo.success? (Cairo.status cr))]
+      (Cairo.destroy cr)
+      (Cairo.surface-destroy surf)
+      ok)))
+
+(defn text-ok? []
+  (let-do [surf (Cairo.image-surface-create Cairo.format-argb32 200 50)
+           cr (Cairo.create surf)]
+    (set-fill 0 0 0 255)
+    (text-font cr "monospace")
+    (text-size cr 16.0)
+    (text cr "Hello" 10.0 30.0)
+    (let-do [ok (Cairo.success? (Cairo.status cr))]
+      (Cairo.destroy cr)
+      (Cairo.surface-destroy surf)
+      ok)))
+
+(defn main []
+  (with-test test
+    ;; hsb-to-rgb
+    (assert-true test (hsb-red-ok?) "hsb-to-rgb: 0/100/100 is red")
+    (assert-true test (hsb-green-ok?) "hsb-to-rgb: 120/100/100 is green")
+    (assert-true test (hsb-gray-ok?) "hsb-to-rgb: saturation 0 is gray")
+    ;; state setters
+    (assert-true test (fill-state-ok?) "set-fill updates globals correctly")
+    (assert-true test (stroke-state-ok?) "set-stroke updates globals correctly")
+    (assert-true test (no-fill-ok?) "no-fill disables fill")
+    (assert-true test (no-stroke-ok?) "no-stroke disables stroke")
+    (assert-true test (stroke-weight-ok?) "stroke-weight updates stroke-w")
+    ;; drawing
+    (assert-true test (draw-and-save-ok?) "draw shapes and write PNG")
+    (assert-true test (file-exists? (cstr "anima-test.png")) "PNG file landed on disk")
+    (assert-true test (defpicture-shapes-ok?) "ellipse, arc, bezier, point don't error")
+    (assert-true test (transforms-ok?) "push/pop/translate/rotate/scale work")
+    (assert-true test (text-ok?) "text rendering works")))

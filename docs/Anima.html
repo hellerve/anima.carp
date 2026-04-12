@@ -9,7 +9,7 @@
     <body>
         <div class="content">
             <div class="logo">
-                <a href="http://github.com/carp-lang/Carp">
+                <a href="">
                     <img src="logo.png">
                 </a>
                 <div class="title">
@@ -25,171 +25,783 @@
                     </ul>
                 </div>
             </div>
-            <h1>
-                Anima
-            </h1>
-            <div class="module-description">
-                <p>A microframework for drawing.</p>
+            <div class="module">
+                <h1>
+                    Anima
+                </h1>
+                <div class="module-description">
+                    <p>A Processing-style microframework for drawing, backed by Cairo.</p>
+<p>Sketches receive a Cairo context to draw into. Anima tracks fill and stroke
+colors as module-level state, and each shape function applies them
+automatically (fill first, then stroke).</p>
 <pre><code>(load &quot;anima.carp&quot;)
 (use Anima)
 
-(defn setup [rend]
-  (framerate 0)) ; shortcut for a static sketch
+(defn setup [cr]
+  (framerate 0))
 
-(defn draw [rend]
+(defn draw [cr]
   (do
-    (color rend 255)
-    (line rend 0 0 800 800)))
+    (stroke-color 255)
+    (line cr 0.0 0.0 800.0 800.0)))
 
-(defsketch &quot;One line to rule them all&quot; 800 800
+(defsketch &quot;One line&quot; 800 800
   setup
   draw)
 </code></pre>
 
-            </div>
-            <div class="binder">
-                <a class="anchor" href="#framerate">
-                    <h3 id="framerate">
-                        framerate
-                    </h3>
-                </a>
-                <div class="description">
-                    defn
                 </div>
-                <p class="sig">
-                    (λ [Int] ())
-                </p>
-                <pre class="args">
-                    (framerate n)
-                </pre>
-                <p class="doc">
-                    <p>Set the framerate to <code>n</code> frames per second.</p>
+                <div class="binder">
+                    <a class="anchor" href="#arc">
+                        <h3 id="arc">
+                            arc
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double, Double, Double, Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (arc cr cx cy r a1 a2)
+                    </pre>
+                    <p class="doc">
+                        <p>Draw an arc centered at (<code>cx</code>, <code>cy</code>) with radius <code>r</code> from <code>a1</code> to <code>a2</code> radians. Stroke only.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#bezier">
+                        <h3 id="bezier">
+                            bezier
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double, Double, Double, Double, Double, Double, Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (bezier cr x1 y1 cx1 cy1 cx2 cy2 x2 y2)
+                    </pre>
+                    <p class="doc">
+                        <p>Draw a cubic Bezier curve from (<code>x1</code>, <code>y1</code>) through control points
+(<code>cx1</code>, <code>cy1</code>) and (<code>cx2</code>, <code>cy2</code>) to (<code>x2</code>, <code>y2</code>). Stroke only.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#circle">
+                        <h3 id="circle">
+                            circle
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double, Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (circle cr cx cy r)
+                    </pre>
+                    <p class="doc">
+                        <p>Draw a circle centered at (<code>cx</code>, <code>cy</code>) with radius <code>r</code>.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#ellipse">
+                        <h3 id="ellipse">
+                            ellipse
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double, Double, Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (ellipse cr cx cy rx ry)
+                    </pre>
+                    <p class="doc">
+                        <p>Draw an ellipse centered at (<code>cx</code>, <code>cy</code>) with radii <code>rx</code> and <code>ry</code>.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#fill-a">
+                        <h3 id="fill-a">
+                            fill-a
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Double
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#fill-b">
+                        <h3 id="fill-b">
+                            fill-b
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Double
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#fill-g">
+                        <h3 id="fill-g">
+                            fill-g
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Double
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#fill-on">
+                        <h3 id="fill-on">
+                            fill-on
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Bool
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#fill-r">
+                        <h3 id="fill-r">
+                            fill-r
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Double
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#fr">
+                        <h3 id="fr">
+                            fr
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Int
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#framerate">
+                        <h3 id="framerate">
+                            framerate
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [Int] ())
+                    </p>
+                    <pre class="args">
+                        (framerate n)
+                    </pre>
+                    <p class="doc">
+                        <p>Set the framerate to <code>n</code> frames per second.</p>
 <p>This will set a maximum, but cannot guarantee that exactly <code>n</code> frames can be
-produced per second.</p>
+produced per second. Set to 0 for a static sketch that draws once.</p>
 
-                </p>
-            </div>
-            <div class="binder">
-                <a class="anchor" href="#hsb-to-rgb">
-                    <h3 id="hsb-to-rgb">
-                        hsb-to-rgb
-                    </h3>
-                </a>
-                <div class="description">
-                    defn
+                    </p>
                 </div>
-                <p class="sig">
-                    (λ [Int, Int, Int] (Array Int))
-                </p>
-                <pre class="args">
-                    (hsb-to-rgb ih is ib)
-                </pre>
-                <p class="doc">
-                    <p>Convert a three-component HSB color to an RGB color array.</p>
+                <div class="binder">
+                    <a class="anchor" href="#hsb-to-rgb">
+                        <h3 id="hsb-to-rgb">
+                            hsb-to-rgb
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [Int, Int, Int] (Array Int))
+                    </p>
+                    <pre class="args">
+                        (hsb-to-rgb ih is ib)
+                    </pre>
+                    <p class="doc">
+                        <p>Convert a three-component HSB color to an RGB color array.</p>
 
-                </p>
-            </div>
-            <div class="binder">
-                <a class="anchor" href="#line">
-                    <h3 id="line">
-                        line
-                    </h3>
-                </a>
-                <div class="description">
-                    defn
+                    </p>
                 </div>
-                <p class="sig">
-                    (λ [(Ptr SDL_Renderer), Int, Int, Int, Int] ())
-                </p>
-                <pre class="args">
-                    (line rend ax ay bx by)
-                </pre>
-                <p class="doc">
-                    <p>Draw a line from (<code>ax</code>, <code>ay</code>) to (<code>bx</code>, <code>by</code>).</p>
+                <div class="binder">
+                    <a class="anchor" href="#line">
+                        <h3 id="line">
+                            line
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double, Double, Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (line cr x1 y1 x2 y2)
+                    </pre>
+                    <p class="doc">
+                        <p>Draw a line from (<code>x1</code>, <code>y1</code>) to (<code>x2</code>, <code>y2</code>). Stroke only.</p>
 
-                </p>
-            </div>
-            <div class="binder">
-                <a class="anchor" href="#point">
-                    <h3 id="point">
-                        point
-                    </h3>
-                </a>
-                <div class="description">
-                    defn
+                    </p>
                 </div>
-                <p class="sig">
-                    (λ [(Ptr SDL_Renderer), Int, Int] ())
-                </p>
-                <pre class="args">
-                    (point rend x y)
-                </pre>
-                <p class="doc">
-                    <p>Draw a point with (<code>x</code>, <code>y</code>) as its coordinates.</p>
+                <div class="binder">
+                    <a class="anchor" href="#no-fill">
+                        <h3 id="no-fill">
+                            no-fill
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [] ())
+                    </p>
+                    <pre class="args">
+                        (no-fill)
+                    </pre>
+                    <p class="doc">
+                        <p>Disable filling for subsequent shapes.</p>
 
-                </p>
-            </div>
-            <div class="binder">
-                <a class="anchor" href="#rand">
-                    <h3 id="rand">
-                        rand
-                    </h3>
-                </a>
-                <div class="description">
-                    defn
+                    </p>
                 </div>
-                <p class="sig">
-                    (λ [Int] Int)
-                </p>
-                <pre class="args">
-                    (rand i)
-                </pre>
-                <p class="doc">
-                    <p>Generate a random integer from <code>0</code> to <code>i</code>.</p>
+                <div class="binder">
+                    <a class="anchor" href="#no-stroke">
+                        <h3 id="no-stroke">
+                            no-stroke
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [] ())
+                    </p>
+                    <pre class="args">
+                        (no-stroke)
+                    </pre>
+                    <p class="doc">
+                        <p>Disable stroking for subsequent shapes.</p>
 
-                </p>
-            </div>
-            <div class="binder">
-                <a class="anchor" href="#rect">
-                    <h3 id="rect">
-                        rect
-                    </h3>
-                </a>
-                <div class="description">
-                    defn
+                    </p>
                 </div>
-                <p class="sig">
-                    (λ [(Ptr SDL_Renderer), Int, Int, Int, Int] ())
-                </p>
-                <pre class="args">
-                    (rect rend ax ay w h)
-                </pre>
-                <p class="doc">
-                    <p>Draw a rectangle with (<code>ax</code>, <code>ay</code>) as origin, <code>w</code> as width, and <code>h</code>
-as height.</p>
+                <div class="binder">
+                    <a class="anchor" href="#point">
+                        <h3 id="point">
+                            point
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (point cr x y)
+                    </pre>
+                    <p class="doc">
+                        <p>Draw a single point at (<code>x</code>, <code>y</code>). Uses a 1-pixel filled circle.</p>
 
-                </p>
-            </div>
-            <div class="binder">
-                <a class="anchor" href="#save">
-                    <h3 id="save">
-                        save
-                    </h3>
-                </a>
-                <div class="description">
-                    defn
+                    </p>
                 </div>
-                <p class="sig">
-                    (λ [(Ref SDLApp), (Ptr SDL_Renderer), Int, Int, String] ())
-                </p>
-                <pre class="args">
-                    (save app rend w h filename)
-                </pre>
-                <p class="doc">
-                    <p>Low-level function that saves the current application and renderer
-to a file of dimensions (<code>w</code>, <code>h</code>) to <code>filename</code>.</p>
+                <div class="binder">
+                    <a class="anchor" href="#pop">
+                        <h3 id="pop">
+                            pop
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext)] ())
+                    </p>
+                    <pre class="args">
+                        (pop cr)
+                    </pre>
+                    <p class="doc">
+                        <p>Restore the most recently pushed Cairo state.</p>
 
-                </p>
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#push">
+                        <h3 id="push">
+                            push
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext)] ())
+                    </p>
+                    <pre class="args">
+                        (push cr)
+                    </pre>
+                    <p class="doc">
+                        <p>Save the current Cairo state (transforms, clip, source, line style).</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#rand">
+                        <h3 id="rand">
+                            rand
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [Int] Int)
+                    </p>
+                    <pre class="args">
+                        (rand i)
+                    </pre>
+                    <p class="doc">
+                        <p>Generate a random integer from <code>0</code> to <code>i</code>.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#rect">
+                        <h3 id="rect">
+                            rect
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double, Double, Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (rect cr x y w h)
+                    </pre>
+                    <p class="doc">
+                        <p>Draw a rectangle at (<code>x</code>, <code>y</code>) with width <code>w</code> and height <code>h</code>.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#rotate">
+                        <h3 id="rotate">
+                            rotate
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double] ())
+                    </p>
+                    <pre class="args">
+                        (rotate cr angle)
+                    </pre>
+                    <p class="doc">
+                        <p>Rotate the coordinate system by <code>angle</code> radians.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#save-png">
+                        <h3 id="save-png">
+                            save-png
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoSurface), (Ref String a)] ())
+                    </p>
+                    <pre class="args">
+                        (save-png surf filename)
+                    </pre>
+                    <p class="doc">
+                        <p>Write the Cairo surface to a PNG file.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#scale">
+                        <h3 id="scale">
+                            scale
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (scale cr sx sy)
+                    </pre>
+                    <p class="doc">
+                        <p>Scale the coordinate system by (<code>sx</code>, <code>sy</code>).</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#set-background">
+                        <h3 id="set-background">
+                            set-background
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Int, Int, Int, Int] ())
+                    </p>
+                    <pre class="args">
+                        (set-background cr r g b a)
+                    </pre>
+                    <p class="doc">
+                        <p>Clear the surface with an RGBA color (0..255 components).</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#set-fill">
+                        <h3 id="set-fill">
+                            set-fill
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [Int, Int, Int, Int] ())
+                    </p>
+                    <pre class="args">
+                        (set-fill r g b a)
+                    </pre>
+                    <p class="doc">
+                        <p>Set the fill color using RGBA components in 0..255.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#set-stroke">
+                        <h3 id="set-stroke">
+                            set-stroke
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [Int, Int, Int, Int] ())
+                    </p>
+                    <pre class="args">
+                        (set-stroke r g b a)
+                    </pre>
+                    <p class="doc">
+                        <p>Set the stroke color using RGBA components in 0..255.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#stroke-a">
+                        <h3 id="stroke-a">
+                            stroke-a
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Double
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#stroke-b">
+                        <h3 id="stroke-b">
+                            stroke-b
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Double
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#stroke-g">
+                        <h3 id="stroke-g">
+                            stroke-g
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Double
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#stroke-on">
+                        <h3 id="stroke-on">
+                            stroke-on
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Bool
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#stroke-r">
+                        <h3 id="stroke-r">
+                            stroke-r
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Double
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#stroke-w">
+                        <h3 id="stroke-w">
+                            stroke-w
+                        </h3>
+                    </a>
+                    <div class="description">
+                        def
+                    </div>
+                    <p class="sig">
+                        Double
+                    </p>
+                    <span>
+                        
+                    </span>
+                    <p class="doc">
+                        
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#stroke-weight">
+                        <h3 id="stroke-weight">
+                            stroke-weight
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [Double] ())
+                    </p>
+                    <pre class="args">
+                        (stroke-weight w)
+                    </pre>
+                    <p class="doc">
+                        <p>Set the stroke width in pixels.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#text">
+                        <h3 id="text">
+                            text
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), (Ref String a), Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (text cr s x y)
+                    </pre>
+                    <p class="doc">
+                        <p>Draw <code>s</code> at position (<code>x</code>, <code>y</code>) using the current fill color.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#text-font">
+                        <h3 id="text-font">
+                            text-font
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), (Ref String a)] ())
+                    </p>
+                    <pre class="args">
+                        (text-font cr family)
+                    </pre>
+                    <p class="doc">
+                        <p>Set the font face by family name (e.g. &quot;monospace&quot;).</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#text-size">
+                        <h3 id="text-size">
+                            text-size
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double] ())
+                    </p>
+                    <pre class="args">
+                        (text-size cr size)
+                    </pre>
+                    <p class="doc">
+                        <p>Set the font size in points.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#translate">
+                        <h3 id="translate">
+                            translate
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (translate cr x y)
+                    </pre>
+                    <p class="doc">
+                        <p>Translate the coordinate origin by (<code>x</code>, <code>y</code>).</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#triangle">
+                        <h3 id="triangle">
+                            triangle
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ptr CairoContext), Double, Double, Double, Double, Double, Double] ())
+                    </p>
+                    <pre class="args">
+                        (triangle cr x1 y1 x2 y2 x3 y3)
+                    </pre>
+                    <p class="doc">
+                        <p>Draw a triangle with vertices (<code>x1</code>, <code>y1</code>), (<code>x2</code>, <code>y2</code>), (<code>x3</code>, <code>y3</code>).</p>
+
+                    </p>
+                </div>
             </div>
         </div>
     </body>

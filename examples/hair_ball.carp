@@ -5,24 +5,26 @@
 (def size 600)
 (def t 300.0f)
 
-(defn setup [rend]
+(defn setup [cr]
   (do
-    (background rend 0)
+    (background cr 0)
     (framerate 1)))
 
-(defn draw [rend]
+(defn draw [cr]
   (for [i 0 800]
     (do
       (let [col (Anima.rand 220)]
-        (color rend col col col 100))
+        (stroke-color col col col 100))
       (let [a (* (random-between 0.0f 1.0f) (* pi 2.0f))
             fromx (to-int (* t (cos a)))
             fromy (to-int (* t (sin a)))
             toa (* (random-between 0.0f 1.0f) (* pi 2.0f))
             tox (to-int (* t (cos toa)))
             toy (to-int (* t (sin toa)))]
-        (line rend (+ fromx (to-int t)) (+ fromy (to-int t))
-                   (+ tox (to-int t)) (+ toy (to-int t)))))))
+        (line cr (Double.from-int (+ fromx (to-int t)))
+                 (Double.from-int (+ fromy (to-int t)))
+                 (Double.from-int (+ tox (to-int t)))
+                 (Double.from-int (+ toy (to-int t))))))))
 
 (defsketch "Hair Ball" size size
   setup

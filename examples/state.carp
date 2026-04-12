@@ -6,16 +6,17 @@
 (defn state []
   (State.init 0 0))
 
-(defn setup [render]
+(defn setup [cr]
   (framerate 3))
 
 (defn inc10 [x] (+ x 10))
 
-(defn draw [render s]
+(defn draw [cr s]
   (do
-    (background render 0)
-    (color render 255)
-    (line render @(State.x &s) @(State.y &s) 400 400)
+    (background cr 0)
+    (stroke-color 255)
+    (line cr (Double.from-int @(State.x &s)) (Double.from-int @(State.y &s))
+             400.0 400.0)
     (=> s (State.update-x &inc10) (State.update-y &inc10))))
 
 (defsketch "stateful" 400 400 setup draw state)

@@ -5,9 +5,9 @@
 (def size 600)
 (def t 300.0f)
 
-(defn setup [rend] (framerate 1))
+(defn setup [cr] (framerate 1))
 
-(defn draw [rend]
+(defn draw [cr]
   (let-do [a (* (random-between 0.0f 1.0f) (* pi 2.0f))
            fromx (+ (to-int (* t (cos a))) (to-int t))
            fromy (+ (to-int (* t (sin a))) (to-int t))
@@ -20,11 +20,15 @@
            toa3 (* (random-between 0.0f 1.0f) (* pi 2.0f))
            tox3 (+ (to-int (* t (cos toa3))) (to-int t))
            toy3 (+ (to-int (* t (sin toa3))) (to-int t))]
-    (background rend 0)
-    (color rend 255)
-    (line rend fromx fromy tox toy)
-    (line rend tox toy tox2 toy2)
-    (line rend tox2 toy2 tox3 toy3)
-    (line rend tox3 toy3 fromx fromy)))
+    (background cr 0)
+    (stroke-color 255)
+    (line cr (Double.from-int fromx) (Double.from-int fromy)
+             (Double.from-int tox) (Double.from-int toy))
+    (line cr (Double.from-int tox) (Double.from-int toy)
+             (Double.from-int tox2) (Double.from-int toy2))
+    (line cr (Double.from-int tox2) (Double.from-int toy2)
+             (Double.from-int tox3) (Double.from-int toy3))
+    (line cr (Double.from-int tox3) (Double.from-int toy3)
+             (Double.from-int fromx) (Double.from-int fromy))))
 
 (defsketch "Boxes" size size setup draw)
