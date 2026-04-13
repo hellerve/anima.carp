@@ -2,32 +2,35 @@
 (use Anima)
 
 (def size 1000)
-(def n-verts 20)
-(def n-layers 8)
-(def n-subdivisions 5)
-(def n-washes 80)
+(def n-polys 500)
+(def n-verts 8)
+(def n-deforms 10)
 
-; dark lush green
-(def base-r 15)
-(def base-g 110)
-(def base-b 30)
-(def base-a 3)
+; sea green
+(def wash-r 46)
+(def wash-g 139)
+(def wash-b 87)
+(def wash-a 3)
 
-(defn make-polygon-at [cx cy radius]
+; Box-Muller: return a Gaussian sample with given mean and stddev
+(defn gaussian [mean stddev]
+  (let [u1 (Double.max 0.000001 (/ (Double.from-int (Int.random-between 1 1000000)) 1000000.0))
+        u2 (/ (Double.from-int (Int.random-between 0 1000000)) 1000000.0)
+        z (* (Double.sqrt (* -2.0 (Double.log u1))) (Double.cos (* 2.0 (* Double.pi u2))))]
+    (+ mean (* stddev z))))
+
+(defn make-polygon [cx cy radius]
   (let-do [xs (Array.allocate n-verts)
-           ys (Array.allocate n-verts)]
+           ys (Array.allocate n-verts)
+           step (/ (* 2.0 Double.pi) (Double.from-int n-verts))]
     (for [i 0 n-verts]
-      (let [angle (* (/ (Double.from-int i) (Double.from-int n-verts))
-                     (* 2.0 Double.pi))
-            r (+ radius (Double.from-int (- (Int.random-between 0 80) 40)))
-            x (+ cx (* r (Double.cos angle)))
-            y (+ cy (* r (Double.sin angle)))]
+      (let [a (* (Double.from-int i) step)]
         (do
-          (Array.aset! &xs i x)
-          (Array.aset! &ys i y))))
+          (Array.aset! &xs i (+ cx (* (Double.cos a) radius)))
+          (Array.aset! &ys i (+ cy (* (Double.sin a) radius))))))
     (Pair.init xs ys)))
 
-(defn subdivide [xs ys spread]
+(defn deform-polygon [xs ys strength]
   (let-do [n (Array.length xs)
            new-xs (Array.allocate (* n 2))
            new-ys (Array.allocate (* n 2))]
@@ -35,24 +38,14 @@
       (let [j (Int.mod (+ i 1) n)
             ax @(Array.unsafe-nth xs i)
             ay @(Array.unsafe-nth ys i)
-            bx @(Array.unsafe-nth xs j)
-            by @(Array.unsafe-nth ys j)
-            mx (/ (+ ax bx) 2.0)
-            my (/ (+ ay by) 2.0)
-            dx (- bx ax)
-            dy (- by ay)
-            len (Double.max (Double.sqrt (+ (* dx dx) (* dy dy))) 0.001)
-            px (/ (neg dy) len)
-            py (/ dx len)
-            perp-amount (* spread (* (- (Double.from-int (Int.random-between 0 2000)) 1000.0) 0.001))
-            edge-amount (* (* spread 0.3) (* (- (Double.from-int (Int.random-between 0 2000)) 1000.0) 0.001))
-            mid-x (+ mx (+ (* px perp-amount) (* (/ dx len) edge-amount)))
-            mid-y (+ my (+ (* py perp-amount) (* (/ dy len) edge-amount)))]
+            bx (/ (+ ax @(Array.unsafe-nth xs j)) 2.0)
+            by (/ (+ ay @(Array.unsafe-nth ys j)) 2.0)
+            s (Double.max 0.0 strength)]
         (do
           (Array.aset! &new-xs (* i 2) ax)
           (Array.aset! &new-ys (* i 2) ay)
-          (Array.aset! &new-xs (+ (* i 2) 1) mid-x)
-          (Array.aset! &new-ys (+ (* i 2) 1) mid-y))))
+          (Array.aset! &new-xs (+ (* i 2) 1) (gaussian bx s))
+          (Array.aset! &new-ys (+ (* i 2) 1) (gaussian by s)))))
     (Pair.init new-xs new-ys)))
 
 (defn draw-polygon [cr xs ys]
@@ -65,36 +58,27 @@
         (Cairo.close-path cr)
         (Cairo.fill cr)))))
 
-(defn draw-wash [cr cx cy radius]
-  (let-do [poly (make-polygon-at cx cy radius)
-           base-xs @(Pair.a &poly)
-           base-ys @(Pair.b &poly)]
-    (for [layer 0 n-layers]
-      (let-do [xs (Array.copy &base-xs)
-               ys (Array.copy &base-ys)
-               spread (* radius 0.5)]
-        (for [s 0 n-subdivisions]
-          (let-do [sub (subdivide &xs &ys spread)]
-            (set! xs @(Pair.a &sub))
-            (set! ys @(Pair.b &sub))
-            (set! spread (* spread 0.5))))
-        (Cairo.set-source-rgba cr
-          (/ (Double.from-int (+ base-r (- (Int.random-between 0 6) 3))) 255.0)
-          (/ (Double.from-int (+ base-g (- (Int.random-between 0 12) 6))) 255.0)
-          (/ (Double.from-int (+ base-b (- (Int.random-between 0 6) 3))) 255.0)
-          (/ (Double.from-int base-a) 255.0))
-        (draw-polygon cr &xs &ys)))))
-
 (defn render [cr]
-  (let [sz (Double.from-int size)
-        margin (* sz 0.1)]
-    (do
-      (background cr 245 242 235)
-      (no-stroke)
-      (for [w 0 n-washes]
-        (let [cx (Double.from-int (Int.random-between 0 size))
-              cy (Double.from-int (Int.random-between 0 size))
-              radius (+ (* sz 0.08) (Double.from-int (Int.random-between 0 (Double.to-int (* sz 0.2)))))]
-          (draw-wash cr cx cy radius))))))
+  (do
+    (background cr 255)
+    (no-stroke)
+    (Cairo.set-source-rgba cr
+      (/ (Double.from-int wash-r) 255.0)
+      (/ (Double.from-int wash-g) 255.0)
+      (/ (Double.from-int wash-b) 255.0)
+      (/ (Double.from-int wash-a) 255.0))
+    (for [j 0 n-polys]
+      (let-do [x (Double.from-int (Int.random-between -100 1100))
+               y (Double.from-int (Int.random-between -100 1100))
+               r (+ 60.0 (Double.from-int (Int.random-between 0 100)))
+               poly (make-polygon x y r)
+               xs @(Pair.a &poly)
+               ys @(Pair.b &poly)]
+        (for [i 0 n-deforms]
+          (let-do [strength (- 6.0 (Double.from-int i))
+                   deformed (deform-polygon &xs &ys strength)]
+            (set! xs @(Pair.a &deformed))
+            (set! ys @(Pair.b &deformed))))
+        (draw-polygon cr &xs &ys)))))
 
 (defpicture "Watercolor" size size render)
